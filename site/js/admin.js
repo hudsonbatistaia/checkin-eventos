@@ -103,19 +103,42 @@
     catch (e) { $("eventosCarregando").hidden = true; toast("Não foi possível carregar os eventos: " + e.message, true); return; }
     $("eventosCarregando").hidden = true;
     $("eventosVazio").hidden = lista.length > 0;
+
+    // Métricas do Painel
+    const totalEv = lista.length;
+    const ativosEv = lista.filter((e) => !e.encerrado_em).length;
+    let totalPessoas = 0, totalPresencas = 0;
+    lista.forEach((e) => {
+      totalPessoas += (Number(e.pessoas) || 0);
+      totalPresencas += (Number(e.presentes) || 0);
+    });
+    if ($("totalEventosNum")) $("totalEventosNum").textContent = totalEv;
+    if ($("ativosEventosNum")) $("ativosEventosNum").textContent = ativosEv;
+    if ($("totalPessoasNum")) $("totalPessoasNum").textContent = totalPessoas.toLocaleString("pt-BR");
+    if ($("totalPresencasNum")) $("totalPresencasNum").textContent = totalPresencas.toLocaleString("pt-BR");
+    if ($("eventosContador")) $("eventosContador").textContent = `${totalEv} ${totalEv === 1 ? "evento no sistema" : "eventos no sistema"}`;
+
     $("listaEventos").innerHTML = lista.map((ev) => {
       const info = [C.dataCurta(ev.data), ev.horario, ev.local].filter(Boolean).join(" · ");
-      const status = ev.encerrado_em ? '<span class="status encerrado">Encerrado</span>' : "";
+      const status = ev.encerrado_em
+        ? '<span class="status encerrado">Encerrado</span>'
+        : '<span class="status aberto">● Ativo</span>';
       const nums = ev.resumo
         ? `<span>Dados pessoais apagados</span>`
-        : `<span><b>${ev.pessoas}</b> nas listas</span><span><b>${ev.presentes}</b> presentes</span>`;
+        : `<span><b>${ev.pessoas}</b> na lista</span><span><b>${ev.presentes}</b> presentes</span>`;
       return `<li class="evento">
-        <div class="evento-capa" style="background:${fundoTema(ev.tema)}">${status}<span class="data">${esc(C.dataExtenso(ev.data) || "Sem data")}</span></div>
+        <div class="evento-capa" style="background:${fundoTema(ev.tema)}">
+          ${status}
+          <span class="data">${esc(C.dataExtenso(ev.data) || "Sem data definida")}</span>
+        </div>
         <div class="evento-corpo">
           <h2><a href="#/evento/${ev.id}">${esc(ev.nome)}</a></h2>
           ${ev.subtitulo ? `<span class="suave">${esc(ev.subtitulo)}</span>` : ""}
           ${info ? `<span class="dica">${esc(info)}</span>` : ""}
           <div class="evento-nums">${nums}</div>
+          <div class="evento-rodape-card">
+            <span class="evento-link-gerenciar">Gerenciar evento <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+          </div>
         </div></li>`;
     }).join("");
   }

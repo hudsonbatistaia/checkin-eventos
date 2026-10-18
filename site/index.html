@@ -7,14 +7,15 @@
 <title>Check-in de Eventos</title>
 <meta name="theme-color" content="#0b1f33">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b1f33'/%3E%3Cpath d='m28 52 15 15 30-32' fill='none' stroke='%232fd3dc' stroke-width='11' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/css/admin.css?v=202610181217">
+<link rel="stylesheet" href="/css/admin.css?v=202610181243">
 </head>
 <body class="bloqueado">
 
 <!-- ======================= ENTRADA ======================= -->
+<!-- ======================= ENTRADA ======================= -->
 <div class="acesso" id="telaAcesso">
   <form class="acesso-cartao" id="formEntrar" autocomplete="on" hidden>
-    <div class="marca grande"><span>Hb</span><span class="one">One</span></div>
+    <div class="acesso-logo-badge"><img src="/img/logo-iel.png" alt="IEL Amazonas" class="acesso-logo"></div>
     <h1>Check-in de Eventos</h1>
     <p class="acesso-sub">Área da organização</p>
     <label for="campoUsuario">Usuário</label>
@@ -42,11 +43,12 @@
 <!-- ======================= BARRA ======================= -->
 <header class="barra">
   <a class="barra-marca" href="#/">
-    <span class="marca"><span>Hb</span><span class="one">One</span></span>
+    <span class="barra-logo-badge"><img src="/img/logo-iel.png" alt="IEL Amazonas" class="barra-logo"></span>
+    <span class="barra-divisor" aria-hidden="true"></span>
     <span class="barra-nome">Check-in de Eventos</span>
   </a>
   <div class="barra-usuario">
-    <span id="usuarioNome"></span>
+    <span class="usuario-chip"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span id="usuarioNome"></span></span>
     <button class="botao link" type="button" id="btnTrocarSenha">Trocar senha</button>
     <button class="botao link" type="button" id="btnSair">Sair</button>
   </div>
@@ -54,16 +56,49 @@
 
 <!-- ======================= EVENTOS ======================= -->
 <main class="pagina" id="telaEventos" hidden>
-  <div class="cabeca">
-    <div>
-      <h1>Eventos</h1>
-      <p class="suave">Cada evento tem a própria identidade, listas, recepção nos tablets e painel.</p>
+  <div class="hero-eventos">
+    <div class="hero-texto">
+      <div class="hero-tag">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>
+        Sistemas Personalizados IEL
+      </div>
+      <h1>Gestão de Check-in e Presença</h1>
+      <p>Crie recepções digitais inteligentes, totens de autoatendimento, listas VIP e emissão automática de certificados com validação pública.</p>
     </div>
-    <button class="botao primario" type="button" id="btnNovo">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
-      Novo evento
-    </button>
+    <div class="hero-acoes">
+      <button class="botao primario hero-btn" type="button" id="btnNovo">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+        Novo Evento
+      </button>
+    </div>
   </div>
+
+  <div class="metricas-resumo" id="metricasResumo">
+    <div class="metrica-card">
+      <span class="metrica-rotulo">Total de Eventos</span>
+      <span class="metrica-valor" id="totalEventosNum">0</span>
+    </div>
+    <div class="metrica-card">
+      <span class="metrica-rotulo">Eventos Ativos</span>
+      <span class="metrica-valor destaque" id="ativosEventosNum">0</span>
+    </div>
+    <div class="metrica-card">
+      <span class="metrica-rotulo">Pessoas Cadastradas</span>
+      <span class="metrica-valor" id="totalPessoasNum">0</span>
+    </div>
+    <div class="metrica-card">
+      <span class="metrica-rotulo">Presenças Confirmadas</span>
+      <span class="metrica-valor verde" id="totalPresencasNum">0</span>
+    </div>
+  </div>
+
+  <div class="secao-titulo">
+    <div>
+      <h2>Seus Eventos</h2>
+      <p class="suave" id="eventosContador">Carregando lista...</p>
+    </div>
+  </div>
+
   <p class="suave" id="eventosCarregando">Carregando eventos…</p>
   <div class="vazio" id="eventosVazio" hidden>
     <h2>Nenhum evento ainda</h2>
@@ -494,16 +529,29 @@
 <!-- Cartão de acesso para imprimir -->
 <div class="impressao" id="impressao" aria-hidden="true"></div>
 
+<!-- ======================= RODAPÉ ======================= -->
+<footer class="rodape-sistema">
+  <div class="rodape-conteudo">
+    <div class="rodape-esq">
+      <span class="rodape-logo-badge"><img src="/img/logo-iel.png" alt="IEL Amazonas" class="rodape-logo"></span>
+      <span class="rodape-desc">Sistemas Personalizados IEL</span>
+    </div>
+    <div class="rodape-dir">
+      <span class="rodape-credito">Desenvolvido por: <strong>Hudson Batista</strong></span>
+    </div>
+  </div>
+</footer>
+
 <script src="/vendor/supabase.min.js"></script>
 <script src="/vendor/qrcode.js"></script>
-<script src="/js/config.js?v=202610181217"></script>
-<script src="/js/comum.js?v=202610181217"></script>
-<script src="/js/presenca.js?v=202610181217"></script>
-<script src="/js/relatorio.js?v=202610181217"></script>
-<script src="/js/imagens.js?v=202610181217"></script>
-<script src="/js/acesso.js?v=202610181217"></script>
-<script src="/js/lista.js?v=202610181217"></script>
-<script src="/js/admin-listas.js?v=202610181217"></script>
-<script src="/js/admin.js?v=202610181217"></script>
+<script src="/js/config.js?v=202610181243"></script>
+<script src="/js/comum.js?v=202610181243"></script>
+<script src="/js/presenca.js?v=202610181243"></script>
+<script src="/js/relatorio.js?v=202610181243"></script>
+<script src="/js/imagens.js?v=202610181243"></script>
+<script src="/js/acesso.js?v=202610181243"></script>
+<script src="/js/lista.js?v=202610181243"></script>
+<script src="/js/admin-listas.js?v=202610181243"></script>
+<script src="/js/admin.js?v=202610181243"></script>
 </body>
 </html>
