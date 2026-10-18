@@ -65,15 +65,52 @@ button, input, select { font: inherit; }
 .acesso-msg.ok { color: var(--suave); }
 
 /* ---------- Barra e Logotipo IEL ---------- */
-.barra { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; padding: 10px clamp(16px, 4vw, 32px); background: color-mix(in srgb, var(--cartao) 92%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--borda); }
-.barra-marca { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-.barra-logo-badge { background: #FFFFFF; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); }
+.barra {
+  position: sticky; top: 0; z-index: 10;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+  padding: 10px clamp(16px, 4vw, 32px);
+  background: color-mix(in srgb, var(--cartao) 94%, transparent);
+  backdrop-filter: blur(14px); border-bottom: 1px solid var(--borda);
+}
+.barra-esq { display: flex; align-items: center; justify-content: flex-start; }
+.barra-marca { display: inline-flex; align-items: center; text-decoration: none; }
+.barra-logo-badge {
+  background: #FFFFFF; padding: 4px 10px; border-radius: 8px;
+  display: inline-flex; align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
 .barra-logo { height: 28px; width: auto; object-fit: contain; display: block; }
-.barra-divisor { width: 1px; height: 24px; background: var(--borda); }
-.barra-nome { color: var(--texto); font-weight: 700; font-size: 16px; letter-spacing: -.01em; }
+
+/* Centro com título destacado e moderno */
+.barra-centro { display: flex; align-items: center; justify-content: center; }
+.barra-titulo-wrapper { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.barra-titulo-gradiente {
+  font-size: clamp(17px, 2.2vw, 21px); font-weight: 800; letter-spacing: -.02em;
+  background: linear-gradient(135deg, #0284C7 0%, #0369A1 50%, #075985 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  display: inline-block;
+}
+@media (prefers-color-scheme: dark) {
+  .barra-titulo-gradiente {
+    background: linear-gradient(135deg, #38BDF8 0%, #60A5FA 60%, #93C5FD 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 24px rgba(56, 189, 248, 0.25);
+  }
+}
+.barra-subtitulo-tag {
+  font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--suave); opacity: .85;
+}
+
+.barra-dir { display: flex; align-items: center; justify-content: flex-end; }
 .barra-usuario { display: flex; align-items: center; gap: 8px; color: var(--suave); font-size: 14px; }
 .usuario-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--destaque-suave); color: var(--destaque); font-weight: 600; font-size: 13px; }
 .usuario-chip svg { color: var(--destaque); }
+
+@media (max-width: 768px) {
+  .barra { display: flex; flex-wrap: wrap; justify-content: space-between; }
+  .barra-centro { order: 3; width: 100%; margin-top: 4px; }
+}
 
 /* Logo da tela de entrada */
 .acesso-logo-badge { background: #FFFFFF; padding: 8px 16px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; border: 1px solid var(--borda); width: fit-content; }
@@ -108,6 +145,50 @@ button, input, select { font: inherit; }
   box-shadow: 0 4px 16px rgba(0, 180, 216, 0.35); transition: all .2s ease;
 }
 .hero-btn:hover { background: #48CAE4; border-color: #48CAE4; transform: translateY(-1px); }
+
+/* ---------- Apresentação de Recursos do Sistema ---------- */
+.apresentacao-sistema {
+  margin-bottom: 28px; padding: 26px clamp(18px, 3vw, 30px);
+  background: var(--cartao); border: 1px solid var(--borda); border-radius: 20px;
+  box-shadow: var(--sombra);
+}
+.apresentacao-cabecalho { text-align: center; max-width: 700px; margin: 0 auto 24px; }
+.apresentacao-selo {
+  display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .08em;
+  color: var(--destaque); text-transform: uppercase; margin-bottom: 6px;
+}
+.apresentacao-cabecalho h2 {
+  font-size: clamp(20px, 2.5vw, 24px); font-weight: 800; color: var(--texto); margin: 0 0 6px;
+  letter-spacing: -.02em;
+}
+.recursos-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); gap: 16px;
+}
+.recurso-card {
+  background: color-mix(in srgb, var(--cartao) 70%, var(--fundo));
+  border: 1px solid var(--borda); border-radius: 16px; padding: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.recurso-card:hover {
+  transform: translateY(-3px); border-color: var(--destaque);
+  box-shadow: 0 10px 24px -8px rgba(11, 31, 51, 0.12);
+}
+.recurso-icone {
+  width: 44px; height: 44px; border-radius: 12px; display: inline-flex;
+  align-items: center; justify-content: center; margin-bottom: 4px;
+}
+.icone-azul { background: rgba(3, 105, 161, 0.12); color: #0284C7; }
+.icone-ciano { background: rgba(14, 138, 148, 0.14); color: #0E8A94; }
+.icone-roxo { background: rgba(139, 92, 246, 0.12); color: #8B5CF6; }
+.icone-verde { background: rgba(16, 185, 129, 0.12); color: #10B981; }
+
+.recurso-card h3 { font-size: 16px; font-weight: 700; color: var(--texto); margin: 0; }
+.recurso-card p { font-size: 13.5px; color: var(--suave); line-height: 1.5; margin: 0; flex: 1; }
+.recurso-destaque {
+  font-size: 11.5px; font-weight: 700; color: var(--destaque); padding-top: 8px;
+  border-top: 1px dashed var(--borda);
+}
 
 /* ---------- Métricas Resumo ---------- */
 .metricas-resumo {
@@ -150,21 +231,24 @@ button, input, select { font: inherit; }
 .evento-rodape-card { display: flex; justify-content: flex-end; padding-top: 6px; }
 .evento-link-gerenciar { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--destaque); }
 
-/* ---------- Rodapé Institucional ---------- */
+/* ---------- Rodapé Centralizado sem Logo ---------- */
 .rodape-sistema {
-  margin-top: 64px; border-top: 1px solid var(--borda); padding: 24px clamp(16px, 4vw, 32px);
-  background: color-mix(in srgb, var(--cartao) 60%, var(--fundo));
+  margin-top: 64px; border-top: 1px solid var(--borda); padding: 28px clamp(16px, 4vw, 32px);
+  background: color-mix(in srgb, var(--cartao) 50%, var(--fundo));
+  text-align: center;
 }
-.rodape-conteudo {
-  max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center;
-  justify-content: space-between; gap: 14px 20px; font-size: 13px; color: var(--suave);
+.rodape-conteudo-central {
+  max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px;
 }
-.rodape-esq { display: flex; align-items: center; gap: 10px; }
-.rodape-logo-badge { background: #FFFFFF; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; border: 1px solid rgba(0, 0, 0, 0.08); }
-.rodape-logo { height: 20px; width: auto; object-fit: contain; }
-.rodape-desc { font-weight: 600; color: var(--texto); }
-.rodape-credito { font-size: 13px; color: var(--suave); }
-.rodape-credito strong { color: var(--texto); font-weight: 700; }
+.rodape-credito {
+  font-size: 14px; color: var(--suave); margin: 0;
+}
+.rodape-credito strong {
+  color: var(--texto); font-weight: 700;
+}
+.rodape-sub {
+  font-size: 12px; color: var(--suave); opacity: .75; margin: 0;
+}
 
 /* ---------- Página ---------- */
 .pagina { max-width: 1240px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 32px) 48px; }
