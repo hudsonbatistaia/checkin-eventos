@@ -177,7 +177,6 @@
       return `<li class="evento">
         <div class="evento-capa ${classeArte}" id="capa-${ev.id}" style="${estiloFundo}">
           <div class="evento-capa-topo">
-            <span class="evento-capa-tag">${temArte ? "Arte do Evento" : "Evento"}</span>
             ${status}
           </div>
           ${mioloVisual}
