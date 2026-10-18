@@ -165,36 +165,62 @@
     const eventoNome = esc(c.evento || "Nome do Evento");
     const dataTxt = dataExtenso(c.data) || "Data do evento";
     let texto = c.texto || "Certificamos que {nome} participou do evento {evento}, realizado em {data}, com carga horária de {horas} horas.";
+    
+    const nomeDestaque = `<span class="cert-destaque-nome">${esc(nome)}</span>`;
+    const eventoDestaque = `<strong class="cert-destaque-evento">${eventoNome}</strong>`;
+    const dataDestaque = `<strong class="cert-destaque-dado">${esc(dataTxt)}</strong>`;
+    const horasDestaque = `<strong class="cert-destaque-dado">${esc(c.horas || 0)} horas</strong>`;
+
     texto = esc(texto)
-      .replace(/{nome}/g, `<b>${esc(nome)}</b>`)
-      .replace(/{evento}/g, `<b>${eventoNome}</b>`)
-      .replace(/{data}/g, `<b>${dataTxt}</b>`)
-      .replace(/{horas}/g, `<b>${c.horas || 0}</b>`);
-    const emissor = esc(c.emissor || "SISTEMA FIEAM / IEL");
+      .replace(/{nome}/g, nomeDestaque)
+      .replace(/{evento}/g, eventoDestaque)
+      .replace(/{data}/g, dataDestaque)
+      .replace(/{horas}\s*(horas?)?/gi, horasDestaque);
+
+    const emissor = esc(c.emissor || "INSTITUTO EUVALDO LODI — IEL AMAZONAS");
     const cod = esc(c.codigo || "CERT-0000-0000");
-    const assNome = esc(c.assinatura_nome || "Coordenação do Evento");
-    const assCargo = esc(c.assinatura_cargo || "");
+    const assNome = esc(c.assinatura_nome || "Coordenação Geral");
+    const assCargo = esc(c.assinatura_cargo || "IEL Amazonas");
     const assImg = c.assinatura_imagem ? `<img class="cert-ass-img" src="${c.assinatura_imagem}" alt="Assinatura">` : "";
+    const logoUrl = c.logo || "/img/logo-iel.png";
 
     return `
       <div class="cert-pagina">
         <div class="cert-moldura">
+          <div class="cert-borda-interna"></div>
+          <div class="cert-canto c-topo-esq"></div>
+          <div class="cert-canto c-topo-dir"></div>
+          <div class="cert-canto c-baixo-esq"></div>
+          <div class="cert-canto c-baixo-dir"></div>
+
           <div class="cert-conteudo">
             <header class="cert-topo">
-              <span class="cert-emissor">${emissor}</span>
-              <h1 class="cert-titulo">CERTIFICADO DE PARTICIPAÇÃO</h1>
+              <div class="cert-marca">
+                <img src="${logoUrl}" alt="Logo IEL" class="cert-logo-img">
+              </div>
+              <div class="cert-titulos">
+                <span class="cert-emissor">${emissor}</span>
+                <h1 class="cert-titulo">CERTIFICADO</h1>
+                <span class="cert-subtitulo">DE PARTICIPAÇÃO</span>
+              </div>
             </header>
+
             <main class="cert-meio">
-              <p class="cert-texto">${texto}</p>
+              <div class="cert-texto-bloco">
+                <p class="cert-texto">${texto}</p>
+              </div>
             </main>
+
             <footer class="cert-rodape">
               <div class="cert-autenticidade">
                 <div class="cert-qr" data-qr="${cod}"></div>
                 <div class="cert-cod-bloco">
-                  <span class="cert-rotulo-cod">Código de autenticidade</span>
+                  <span class="cert-rotulo-cod">Autenticidade Digital</span>
                   <span class="cert-cod">${cod}</span>
+                  <span class="cert-dica-valida">Valide pela câmera ou link oficial</span>
                 </div>
               </div>
+
               <div class="cert-assinatura">
                 ${assImg}
                 <div class="cert-traco"></div>
@@ -202,6 +228,10 @@
                 ${assCargo ? `<span class="cert-ass-cargo">${assCargo}</span>` : ""}
               </div>
             </footer>
+
+            <div class="cert-faixa-rodape">
+              <span>SISTEMA FIEAM · IEL AMAZONAS · PELO FUTURO DO TRABALHO</span>
+            </div>
           </div>
         </div>
       </div>

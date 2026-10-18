@@ -398,28 +398,274 @@ body.consulta .find .search { flex-basis: 100%; }
 .modal-cert-botoes { display: flex; justify-content: flex-end; gap: 10px; }
 .modal-cert-papel { overflow-x: auto; background: #e2e8f0; padding: 12px; border-radius: 8px; display: grid; place-items: center; }
 
-/* ---------- Layout do Certificado (A4 Paisagem) ---------- */
-.cert-pagina { width: 297mm; max-width: 100%; aspect-ratio: 297 / 210; background: #FFF; color: #1a202c; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; box-sizing: border-box; padding: 12mm; display: grid; position: relative; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-.cert-moldura { border: 3px double var(--destaque, #1e3a8a); padding: 5mm; height: 100%; box-sizing: border-box; position: relative; background: radial-gradient(circle at center, #ffffff 60%, #f8fafc 100%); }
-.cert-conteudo { border: 1px solid rgba(0,0,0,0.12); height: 100%; box-sizing: border-box; padding: 8mm 14mm; display: flex; flex-direction: column; justify-content: space-between; text-align: center; }
-.cert-topo { display: grid; gap: 4px; border-bottom: 2px solid var(--destaque, #1e3a8a); padding-bottom: 5mm; }
-.cert-emissor { font-size: 12pt; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: #475569; }
-.cert-titulo { margin: 4px 0 0; font-family: var(--display, Georgia, serif); font-size: 26pt; font-weight: 800; letter-spacing: .08em; color: var(--destaque, #0f172a); }
-.cert-meio { flex: 1; display: flex; align-items: center; justify-content: center; padding: 6mm 0; }
-.cert-texto { font-size: 14pt; line-height: 1.8; color: #334155; margin: 0; max-width: 90%; }
-.cert-texto b { color: #0f172a; font-weight: 700; }
-.cert-rodape { display: flex; justify-content: space-between; align-items: flex-end; padding-top: 4mm; border-top: 1px solid rgba(0,0,0,0.1); }
-.cert-autenticidade { display: flex; align-items: center; gap: 8px; text-align: left; }
-.cert-qr { width: 22mm; height: 22mm; }
-.cert-qr svg { width: 100%; height: 100%; display: block; }
-.cert-cod-bloco { display: grid; font-size: 8pt; color: #64748b; line-height: 1.25; }
-.cert-rotulo-cod { text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
-.cert-cod { font-family: monospace; font-size: 9pt; font-weight: 700; color: #0f172a; }
-.cert-assinatura { display: grid; justify-items: center; text-align: center; min-width: 60mm; }
-.cert-ass-img { max-height: 16mm; max-width: 50mm; object-fit: contain; margin-bottom: 2mm; }
-.cert-traco { width: 100%; height: 1px; background: #0f172a; margin-bottom: 3px; }
-.cert-ass-nome { font-size: 11pt; color: #0f172a; }
-.cert-ass-cargo { font-size: 9pt; color: #64748b; }
+/* ---------- Layout do Certificado (A4 Paisagem - Design Moderno IEL) ---------- */
+.cert-pagina {
+  width: 297mm;
+  height: 210mm;
+  max-width: 100%;
+  aspect-ratio: 297 / 210;
+  background: #FFFFFF;
+  color: #0F172A;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
+  padding: 8mm;
+  display: block;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0 10px 40px rgba(11, 31, 51, 0.12);
+  line-height: 1.4;
+}
+
+.cert-moldura {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  position: relative;
+  background: #FFFFFF;
+  border: 2px solid #002B49;
+  padding: 6mm;
+}
+
+.cert-borda-interna {
+  position: absolute;
+  inset: 4mm;
+  border: 1px solid rgba(14, 138, 148, 0.35);
+  pointer-events: none;
+}
+
+.cert-canto {
+  position: absolute;
+  width: 14mm;
+  height: 14mm;
+  border: 2.5px solid #0E8A94;
+  pointer-events: none;
+}
+.cert-canto.c-topo-esq { top: 2mm; left: 2mm; border-right: none; border-bottom: none; }
+.cert-canto.c-topo-dir { top: 2mm; right: 2mm; border-left: none; border-bottom: none; }
+.cert-canto.c-baixo-esq { bottom: 2mm; left: 2mm; border-right: none; border-top: none; }
+.cert-canto.c-baixo-dir { bottom: 2mm; right: 2mm; border-left: none; border-top: none; }
+
+.cert-conteudo {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6mm 10mm 4mm;
+  position: relative;
+  z-index: 1;
+}
+
+.cert-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.5px solid #E2E8F0;
+  padding-bottom: 5mm;
+  position: relative;
+}
+
+.cert-topo::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1.5px;
+  width: 80mm;
+  height: 2.5px;
+  background: linear-gradient(90deg, #0E8A94, #2FD3DC);
+}
+
+.cert-marca {
+  display: flex;
+  align-items: center;
+}
+
+.cert-logo-img {
+  max-height: 16mm;
+  max-width: 65mm;
+  object-fit: contain;
+  display: block;
+}
+
+.cert-titulos {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.cert-emissor {
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #0E8A94;
+  margin-bottom: 2px;
+}
+
+.cert-titulo {
+  margin: 0;
+  font-size: 26pt;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: #002B49;
+  line-height: 1.05;
+}
+
+.cert-subtitulo {
+  font-size: 9.5pt;
+  font-weight: 700;
+  letter-spacing: .25em;
+  color: #64748B;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.cert-meio {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4mm 6mm;
+  text-align: center;
+}
+
+.cert-texto-bloco {
+  max-width: 88%;
+}
+
+.cert-texto {
+  font-size: 13.5pt;
+  line-height: 1.85;
+  color: #334155;
+  margin: 0;
+}
+
+.cert-destaque-nome {
+  display: inline-block;
+  font-size: 19pt;
+  font-weight: 800;
+  color: #002B49;
+  padding: 0 4px;
+  letter-spacing: -.01em;
+  border-bottom: 2.5px solid #0E8A94;
+}
+
+.cert-destaque-evento {
+  color: #002B49;
+  font-weight: 700;
+}
+
+.cert-destaque-dado {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.cert-rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 4mm;
+  border-top: 1px solid #E2E8F0;
+}
+
+.cert-autenticidade {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.cert-qr {
+  width: 22mm;
+  height: 22mm;
+  background: #FFFFFF;
+  padding: 1mm;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.cert-qr svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.cert-cod-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 8pt;
+  color: #64748B;
+}
+
+.cert-rotulo-cod {
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 800;
+  font-size: 7.5pt;
+  color: #0E8A94;
+}
+
+.cert-cod {
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-size: 9.5pt;
+  font-weight: 800;
+  color: #002B49;
+  letter-spacing: .05em;
+}
+
+.cert-dica-valida {
+  font-size: 7.5pt;
+  color: #94A3B8;
+}
+
+.cert-assinatura {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 62mm;
+}
+
+.cert-ass-img {
+  max-height: 16mm;
+  max-width: 55mm;
+  object-fit: contain;
+  margin-bottom: 2mm;
+}
+
+.cert-traco {
+  width: 100%;
+  height: 1.5px;
+  background: #002B49;
+  margin-bottom: 4px;
+}
+
+.cert-ass-nome {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: #002B49;
+}
+
+.cert-ass-cargo {
+  font-size: 8.5pt;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.cert-faixa-rodape {
+  margin-top: 3mm;
+  text-align: center;
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: #94A3B8;
+  opacity: .85;
+}
 
 @media print {
   @page { size: A4 landscape; margin: 0; }
