@@ -170,11 +170,27 @@
     $("telaEventos").hidden = true; $("telaEvento").hidden = false;
     return true;
   }
+  async function atualizarLogoCabecalho() {
+    const img = $("evLogo");
+    if (!img || !evento) return;
+    if (evento.imagens && (evento.imagens.logo || evento.imagens.arte)) {
+      try {
+        const tipo = evento.imagens.logo ? "logo" : "arte";
+        const url = await rpc("imagem", { p_slug: evento.slug, p_tipo: tipo });
+        img.src = url || "/img/logo-iel.png";
+      } catch {
+        img.src = "/img/logo-iel.png";
+      }
+    } else {
+      img.src = "/img/logo-iel.png";
+    }
+  }
+
   function preencherCabecalho() {
     $("evNome").textContent = evento.nome;
     document.title = evento.nome + " · Check-in de Eventos";
     $("evInfo").textContent = [C.dataExtenso(evento.data), evento.horario, evento.local].filter(Boolean).join(" · ") || "Sem data definida";
-    $("evAmostra").style.background = fundoTema(evento.tema);
+    atualizarLogoCabecalho();
     $("evStatus").textContent = evento.encerrado
       ? "Check-in encerrado" + (evento.encerramento ? " às " + C.hhmm(evento.encerramento) : "")
       : "Aberto" + (evento.encerra_em ? " · encerra " + quandoCurto(evento.encerra_em) : "");
@@ -373,6 +389,9 @@
       box.querySelector(".imagem-vazia").hidden = !!im.url;
       box.querySelector("[data-remover]").hidden = !im.url;
     });
+    if ($("evLogo")) {
+      $("evLogo").src = (imagens.logo && imagens.logo.url) || (imagens.arte && imagens.arte.url) || "/img/logo-iel.png";
+    }
     enviarPrevia();
   }
   function mostrarCores() {
