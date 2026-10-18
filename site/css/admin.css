@@ -244,7 +244,7 @@ button, input, select { font: inherit; }
 .evento:hover { border-color: var(--destaque); transform: translateY(-3px); box-shadow: 0 12px 30px -8px rgba(11, 31, 51, 0.16); }
 .evento-capa {
   position: relative;
-  height: 120px;
+  height: 154px;
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
@@ -259,14 +259,14 @@ button, input, select { font: inherit; }
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 43, 73, 0.45) 0%, rgba(0, 43, 73, 0.88) 100%);
+  background: linear-gradient(180deg, rgba(0, 43, 73, 0.35) 0%, rgba(0, 43, 73, 0.88) 100%);
   pointer-events: none;
 }
 .evento-capa:not(.tem-arte-fundo)::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.22), transparent 60%);
+  background: radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.2), transparent 60%);
   pointer-events: none;
 }
 .evento-capa-topo {
@@ -276,23 +276,49 @@ button, input, select { font: inherit; }
   position: relative;
   z-index: 1;
 }
-.evento-capa-logo-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #FFFFFF;
-  padding: 5px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+.evento-capa-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 3px 8px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+.evento-capa-centro {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  padding: 4px 8px;
 }
-.evento-capa-logo {
+.evento-capa-moldura-logo {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 8px 18px;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 86%;
+  height: 66px;
+  box-sizing: border-box;
+  transition: transform .2s ease;
+}
+.evento:hover .evento-capa-moldura-logo {
+  transform: scale(1.03);
+}
+.evento-capa-moldura-logo.iel {
+  background: rgba(255, 255, 255, 0.92);
+  padding: 6px 14px;
+}
+.evento-capa-logo-grande {
+  max-height: 50px;
   max-width: 100%;
-  max-height: 100%;
   object-fit: contain;
   display: block;
 }
