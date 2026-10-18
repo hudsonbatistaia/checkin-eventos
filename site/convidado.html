@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Check-in</title>
+<meta name="theme-color" content="#0B2545" id="corTema">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b1f33'/%3E%3Cpath d='m28 52 15 15 30-32' fill='none' stroke='%232fd3dc' stroke-width='11' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/evento.css?v=202610181217">
+</head>
+<body class="convidado">
+<main class="conv">
+  <header class="conv-topo">
+    <img class="conv-arte" id="cArte" alt="" hidden>
+    <h1 id="cNome">Carregando…</h1>
+    <p id="cInfo"></p>
+  </header>
+
+  <!-- Avisos (QR vencido, antes da abertura, encerrado, fora do local…) -->
+  <section class="conv-aviso" id="cAviso" hidden role="alert">
+    <h2 id="cAvisoTit"></h2>
+    <p id="cAvisoTxt"></p>
+  </section>
+
+  <!-- Formulário -->
+  <form class="sheet conv-form" id="cForm" autocomplete="off" novalidate hidden>
+    <h2>Faça seu check-in</h2>
+    <p>Preencha seus dados para confirmar sua presença.</p>
+    <label>Nome completo <input id="aNome" type="text" maxlength="120" autocomplete="name"></label>
+    <div class="campos-form" id="aCampos"></div>
+    <label class="lgpd" id="aLgpd"><input type="checkbox" id="aConsente"> <span id="aLgpdTexto"></span></label>
+    <p class="conv-geo" id="cGeoAviso" hidden>Ao continuar, o navegador vai pedir sua <b>localização</b>: ela serve só para confirmar que você está no local do evento.</p>
+    <p class="errmsg" id="aErr" role="alert" hidden></p>
+    <button class="btn primary" type="submit" id="cEnviar">Fazer check-in</button>
+  </form>
+
+  <!-- Comprovante -->
+  <section class="comprovante" id="cOk" hidden aria-live="polite">
+    <div class="comp-check" aria-hidden="true"><span>✓</span></div>
+    <h2>Check-in confirmado</h2>
+    <p class="comp-nome" id="okNome"></p>
+    <p class="comp-hora" id="okHora"></p>
+    <div class="comp-ao-vivo"><span class="comp-faixa" aria-hidden="true"></span><span>agora <b class="tabnum" id="okRelogio"></b></span></div>
+    <p class="comp-dica">Mostre esta tela na entrada do evento.</p>
+
+    <!-- Certificado e WhatsApp -->
+    <div class="comp-cert" id="compCert" hidden>
+      <div class="comp-cert-card">
+        <div class="comp-cert-cabeca">
+          <span class="comp-cert-ico" aria-hidden="true">🎓</span>
+          <div>
+            <h3>Certificado de participação</h3>
+            <p id="compCertMsg">Estará liberado para download após o evento.</p>
+          </div>
+        </div>
+        <button class="btn comp-btn-zap" type="button" id="btnZapCert">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.41a8.165 8.165 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.16 0-.43.06-.66.31-.23.25-.87.85-.87 2.07s.89 2.4 1.02 2.57c.13.17 1.75 2.67 4.24 3.74.59.26 1.05.41 1.41.53.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.12-.22-.19-.47-.32"/></svg>
+          Salvar link no meu WhatsApp
+        </button>
+        <button class="btn primary comp-btn-baixar" type="button" id="btnBaixarCert" hidden>
+          Baixar meu Certificado (PDF)
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Visualização e impressão do certificado em tela cheia -->
+<div class="modal-cert" id="modalCert" hidden>
+  <div class="modal-cert-conteudo">
+    <div class="modal-cert-botoes">
+      <button class="btn" type="button" id="btnFecharCert">Fechar</button>
+      <button class="btn primary" type="button" id="btnImprimirCert">Imprimir / Salvar PDF</button>
+    </div>
+    <div class="modal-cert-papel" id="certContainer"></div>
+  </div>
+</div>
+
+<div class="impressao impressao-certificados" id="impressaoCert" aria-hidden="true"></div>
+
+<script src="/vendor/supabase.min.js"></script>
+<script src="/vendor/qrcode.js"></script>
+<script src="/js/config.js?v=202610181217"></script>
+<script src="/js/comum.js?v=202610181217"></script>
+<script src="/js/formulario.js?v=202610181217"></script>
+<script src="/js/convidado.js?v=202610181217"></script>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Check-in de Eventos</title>
+<meta name="theme-color" content="#0b1f33">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b1f33'/%3E%3Cpath d='m28 52 15 15 30-32' fill='none' stroke='%232fd3dc' stroke-width='11' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/css/admin.css?v=202610181217">
+</head>
+<body class="bloqueado">
+
+<!-- ======================= ENTRADA ======================= -->
+<div class="acesso" id="telaAcesso">
+  <form class="acesso-cartao" id="formEntrar" autocomplete="on" hidden>
+    <div class="marca grande"><span>Hb</span><span class="one">One</span></div>
+    <h1>Check-in de Eventos</h1>
+    <p class="acesso-sub">Área da organização</p>
+    <label for="campoUsuario">Usuário</label>
+    <input id="campoUsuario" name="username" autocomplete="username" required autocapitalize="none" spellcheck="false">
+    <label for="campoSenha">Senha</label>
+    <input id="campoSenha" name="password" type="password" autocomplete="current-password" required>
+    <button class="botao primario" type="submit" id="btnEntrar">Entrar</button>
+    <p class="acesso-msg" id="msgAcesso" role="alert"></p>
+  </form>
+  <form class="acesso-cartao" id="formNovaSenha" hidden>
+    <input type="text" name="username" autocomplete="username" hidden tabindex="-1" aria-hidden="true">
+    <h1>Trocar senha</h1>
+    <p class="acesso-sub">Mínimo de 10 caracteres.</p>
+    <label for="campoNova1">Nova senha</label>
+    <input id="campoNova1" type="password" autocomplete="new-password" minlength="10" required>
+    <label for="campoNova2">Repita a nova senha</label>
+    <input id="campoNova2" type="password" autocomplete="new-password" minlength="10" required>
+    <button class="botao primario" type="submit">Salvar senha</button>
+    <button class="botao link" type="button" id="btnCancelarSenha">Cancelar</button>
+    <p class="acesso-msg" id="msgNovaSenha" role="alert"></p>
+  </form>
+  <p class="acesso-msg ok" id="msgCarregando">Carregando…</p>
+</div>
+
+<!-- ======================= BARRA ======================= -->
+<header class="barra">
+  <a class="barra-marca" href="#/">
+    <span class="marca"><span>Hb</span><span class="one">One</span></span>
+    <span class="barra-nome">Check-in de Eventos</span>
+  </a>
+  <div class="barra-usuario">
+    <span id="usuarioNome"></span>
+    <button class="botao link" type="button" id="btnTrocarSenha">Trocar senha</button>
+    <button class="botao link" type="button" id="btnSair">Sair</button>
+  </div>
+</header>
+
+<!-- ======================= EVENTOS ======================= -->
+<main class="pagina" id="telaEventos" hidden>
+  <div class="cabeca">
+    <div>
+      <h1>Eventos</h1>
+      <p class="suave">Cada evento tem a própria identidade, listas, recepção nos tablets e painel.</p>
+    </div>
+    <button class="botao primario" type="button" id="btnNovo">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      Novo evento
+    </button>
+  </div>
+  <p class="suave" id="eventosCarregando">Carregando eventos…</p>
+  <div class="vazio" id="eventosVazio" hidden>
+    <h2>Nenhum evento ainda</h2>
+    <p>Crie o primeiro evento para montar a identidade, as listas e a recepção.</p>
+  </div>
+  <ul class="eventos" id="listaEventos"></ul>
+</main>
+
+<!-- ======================= UM EVENTO ======================= -->
+<main class="pagina" id="telaEvento" hidden>
+  <a class="voltar" href="#/">← Eventos</a>
+  <div class="cabeca">
+    <div class="cabeca-evento">
+      <span class="amostra" id="evAmostra" aria-hidden="true"></span>
+      <div>
+        <h1 id="evNome"></h1>
+        <p class="suave" id="evInfo"></p>
+      </div>
+    </div>
+    <div class="cabeca-acoes">
+      <span class="status" id="evStatus"></span>
+      <a class="botao" id="evAbrirRecepcao" target="_blank" rel="noopener">Abrir recepção</a>
+      <a class="botao" id="evAbrirPainel" target="_blank" rel="noopener">Abrir painel</a>
+    </div>
+  </div>
+
+  <nav class="abas" aria-label="Configuração do evento">
+    <a href="#" data-aba="dados">Dados</a>
+    <a href="#" data-aba="identidade">Identidade visual</a>
+    <a href="#" data-aba="convidados">Convidados</a>
+    <a href="#" data-aba="vip">Listas VIP</a>
+    <a href="#" data-aba="acesso">Acesso dos tablets</a>
+    <a href="#" data-aba="operacao">Operação</a>
+    <a href="#" data-aba="certificados">Certificados</a>
+  </nav>
+
+  <!-- Dados -->
+  <section class="aba" id="aba-dados" hidden>
+    <form class="cartao formulario" id="formDados" autocomplete="off" novalidate>
+      <div class="campos">
+        <label class="largo">Nome do evento <input id="dNome" maxlength="120" required></label>
+        <label class="largo">Subtítulo <span class="dica">edição, cidade ou frase curta (opcional)</span><input id="dSubtitulo" maxlength="120"></label>
+        <label>Data <input id="dData" type="date"></label>
+        <label>Horário <span class="dica">ex.: 19h</span><input id="dHorario" maxlength="40"></label>
+        <label class="largo">Local <input id="dLocal" maxlength="160"></label>
+        <div class="largo campo-encerra">
+          <label for="dEncerra">Encerrar o check-in automaticamente em <span class="dica">opcional · depois desse horário os tablets param de confirmar e mostram "Check-in encerrado"; o painel e o relatório continuam</span></label>
+          <div class="linha-encerra">
+            <input id="dEncerra" type="datetime-local">
+            <button class="botao link pequeno" type="button" id="dEncerraEvento">usar a data do evento</button>
+            <button class="botao link pequeno" type="button" id="dEncerraLimpar">sem horário</button>
+          </div>
+          <span class="dica" id="dEncerraInfo"></span>
+        </div>
+        <label class="largo">Mensagem de boas-vindas <span class="dica">aparece no totem depois que a pessoa confirma (opcional)</span><input id="dBoasVindas" maxlength="200" placeholder="Que bom ter você aqui!"></label>
+      </div>
+      <fieldset class="modos">
+        <legend>Tipo de evento</legend>
+        <label class="modo">
+          <input type="radio" name="tipo" value="lista">
+          <span class="modo-cartao">
+            <b>Com lista prévia</b>
+            <span>Você envia as listas de convidados; a recepção busca o nome e confirma. Quem não está na lista pode ser cadastrado na hora.</span>
+          </span>
+        </label>
+        <label class="modo">
+          <input type="radio" name="tipo" value="aberto">
+          <span class="modo-cartao">
+            <b>Evento aberto (cadastro na entrada)</b>
+            <span>Sem lista: cada pessoa preenche um cadastro rápido ao chegar. A recepção abre direto no formulário. Listas VIP continuam opcionais.</span>
+          </span>
+        </label>
+      </fieldset>
+      <fieldset class="cadastro-entrada">
+        <legend>Cadastro na entrada</legend>
+        <p class="dica">O que pedir a quem se cadastra na hora (no evento aberto, a todo mundo). O nome completo é sempre pedido. CPF, nascimento, e-mail, telefone e campos livres <b>não aparecem nos tablets</b>: só no relatório baixado pela organização.</p>
+        <div class="campos-lista" id="camposFixos"></div>
+        <div class="campos-lista" id="camposLivres"></div>
+        <button class="botao link pequeno" type="button" id="btnCampoLivre">+ Campo com nome livre</button>
+        <div class="campo-lgpd">
+          <label for="dLgpd">Aviso de LGPD <span class="dica">aparece com uma caixinha de aceite obrigatória quando o cadastro pede algo além de nome e empresa</span></label>
+          <textarea id="dLgpd" rows="3" maxlength="600"></textarea>
+          <button class="botao link pequeno" type="button" id="btnLgpdPadrao">usar o texto padrão</button>
+        </div>
+      </fieldset>
+      <fieldset class="modos">
+        <legend>Quem usa o tablet na entrada?</legend>
+        <label class="modo">
+          <input type="radio" name="modo" value="recepcao">
+          <span class="modo-cartao">
+            <b>Equipe de recepção</b>
+            <span>A equipe busca o nome e confirma com um toque. Pode cancelar entradas e ver as últimas chegadas.</span>
+          </span>
+        </label>
+        <label class="modo">
+          <input type="radio" name="modo" value="totem">
+          <span class="modo-cartao">
+            <b>Totem (autoatendimento)</b>
+            <span>Quem chega digita o próprio nome, toca em "Sou eu" e vê uma tela grande de boas-vindas. Sem lista de chegadas na tela.</span>
+          </span>
+        </label>
+      </fieldset>
+      <div class="rodape-form">
+        <span class="estado" id="dEstado"></span>
+        <button class="botao primario" type="submit" id="dSalvar">Salvar dados</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Identidade -->
+  <section class="aba" id="aba-identidade" hidden>
+    <div class="identidade">
+      <div class="cartao id-config">
+        <h2>Imagens</h2>
+        <div class="imagens">
+          <div class="imagem-campo" data-tipo="arte">
+            <div class="imagem-quadro"><img alt="Arte do evento" hidden><span class="imagem-vazia">Sem arte</span></div>
+            <div>
+              <b>Arte do evento</b>
+              <p class="dica">Aparece no topo da recepção. JPG ou PNG, de preferência na horizontal.</p>
+              <label class="botao pequeno"><input type="file" accept="image/jpeg,image/png,image/webp" hidden>Escolher imagem</label>
+              <button class="botao link pequeno" type="button" data-remover hidden>Remover</button>
+            </div>
+          </div>
+          <div class="imagem-campo" data-tipo="logo">
+            <div class="imagem-quadro logo"><img alt="Logo" hidden><span class="imagem-vazia">Sem logo</span></div>
+            <div>
+              <b>Logo <span class="dica">(opcional)</span></b>
+              <p class="dica">Aparece no cabeçalho. PNG com fundo transparente fica melhor.</p>
+              <label class="botao pequeno"><input type="file" accept="image/jpeg,image/png,image/webp" hidden>Escolher imagem</label>
+              <button class="botao link pequeno" type="button" data-remover hidden>Remover</button>
+            </div>
+          </div>
+        </div>
+        <p class="erro" id="imgErro" hidden></p>
+
+        <h2>Cores</h2>
+        <div class="paleta" id="paleta" hidden>
+          <span class="dica">Cores encontradas na arte. Toque numa cor para usá-la.</span>
+          <div class="paleta-cores" id="paletaCores"></div>
+          <button class="botao link pequeno" type="button" id="btnSugerir">Sugerir cores da arte de novo</button>
+        </div>
+        <div class="cores" id="cores">
+          <label class="cor"><input type="color" data-cor="fundo1"><span><b>Fundo</b><span class="dica">início do degradê</span></span><code></code></label>
+          <label class="cor"><input type="color" data-cor="fundo2"><span><b>Fundo</b><span class="dica">fim do degradê</span></span><code></code></label>
+          <label class="cor"><input type="color" data-cor="destaque"><span><b>Destaque</b><span class="dica">números, botão ativo, contorno da busca</span></span><code></code></label>
+          <label class="cor"><input type="color" data-cor="destaque2"><span><b>Segundo destaque</b><span class="dica">botão "Cadastrar agora" e detalhes</span></span><code></code></label>
+        </div>
+        <div class="rodape-form">
+          <span class="estado" id="iEstado"></span>
+          <button class="botao primario" type="button" id="iSalvar">Salvar identidade</button>
+        </div>
+      </div>
+
+      <div class="cartao id-previa">
+        <div class="previa-topo">
+          <h2>Prévia do tablet</h2>
+          <div class="seletor" role="group" aria-label="Momento da prévia">
+            <button type="button" data-previa="inicio" aria-pressed="true">Tela inicial</button>
+            <button type="button" data-previa="busca" aria-pressed="false">Buscando um nome</button>
+          </div>
+        </div>
+        <div class="tablet"><iframe id="previa" src="/previa.html" title="Prévia da recepção" tabindex="-1"></iframe></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Acesso -->
+  <!-- Convidados (listas fixas) -->
+  <section class="aba" id="aba-convidados" hidden>
+    <p class="suave intro">A mesma pessoa pode estar em mais de uma lista: o sistema liga pelo nome e a presença vale para todas. Ao enviar uma planilha, você escolhe quais colunas são o nome e a empresa e confere o resumo antes de salvar.</p>
+    <div class="listas" id="listasFixas"></div>
+  </section>
+
+  <!-- Listas VIP -->
+  <section class="aba" id="aba-vip" hidden>
+    <div class="cabeca pequena">
+      <p class="suave intro">Listas especiais com o nome que o evento precisar (Autoridades, Finalistas, Palestrantes, Imprensa…). Cada uma tem cor, selo no tablet, destaque no painel e aba no relatório. Quem só está numa lista VIP também aparece na busca da recepção.</p>
+      <button class="botao primario" type="button" id="btnNovaVip">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        Nova lista VIP
+      </button>
+    </div>
+    <div class="vazio" id="vipVazio" hidden><h2>Nenhuma lista VIP</h2><p>Crie listas como Autoridades, Finalistas ou Palestrantes.</p></div>
+    <div class="listas" id="listasVip"></div>
+  </section>
+
+  <section class="aba" id="aba-acesso" hidden>
+    <div class="grade-acesso">
+      <div class="cartao">
+        <h2>Link do evento</h2>
+        <p class="suave">Abra este link nos tablets da recepção e no aparelho do painel. Na primeira vez, o aparelho pede o código.</p>
+        <div class="copiavel"><code id="aLink"></code><button class="botao pequeno" type="button" data-copiar="aLink">Copiar</button></div>
+        <h2>Código de acesso</h2>
+        <p class="suave">Sem o código ninguém vê os nomes nem confirma presenças. Passe só para a equipe.</p>
+        <div class="codigo" id="aCodigo"></div>
+        <div class="linha-botoes">
+          <button class="botao pequeno" type="button" data-copiar="aCodigo">Copiar código</button>
+          <button class="botao pequeno perigo" type="button" id="btnNovoCodigo">Trocar código</button>
+        </div>
+        <p class="dica">Ao trocar, os tablets já abertos pedem o código novo.</p>
+      </div>
+      <div class="cartao qr">
+        <h2>QR code para a equipe</h2>
+        <p class="suave">Já entra com o código: é só apontar a câmera do tablet. <b>Não divulgue</b> para o público.</p>
+        <div class="qr-imagem" id="aQr"></div>
+        <button class="botao pequeno" type="button" id="btnImprimir">Imprimir cartão de acesso</button>
+      </div>
+    </div>
+    <div class="cartao qr-convidados" id="qrConvidados">
+      <h2>QR para os convidados <span class="dica">· check-in pelo próprio celular</span></h2>
+      <p class="dica" id="qcSo">Disponível só no <b>evento aberto</b> (aba Dados → Tipo de evento).</p>
+      <div class="qc-grade" id="qcConteudo">
+        <div class="qc-opcoes">
+          <p class="suave">Quem chega aponta a câmera, preenche os dados (com CPF) e mostra o comprovante na entrada. O celular não vê nomes de ninguém.</p>
+          <div class="campo-encerra">
+            <label for="qcAbre">Abrir o check-in pelo celular em <span class="dica">antes desse horário o celular mostra "O check-in abre às…"; fecha junto com o encerramento</span></label>
+            <div class="linha-encerra">
+              <input id="qcAbre" type="datetime-local">
+              <button class="botao link pequeno" type="button" id="qcAbreLimpar">abrir já (sem horário)</button>
+            </div>
+          </div>
+          <label class="marcar"><input type="checkbox" id="qcRotativo"> <span><b>QR muda a cada minuto</b><span class="dica">O QR aparece só na tela cheia (tablet ou TV na entrada). Foto postada em grupo vence em até 2 minutos. Cartaz impresso fica desativado.</span></span></label>
+          <label class="marcar"><input type="checkbox" id="qcGeo"> <span><b>Conferir localização</b><span class="dica">Só faz check-in quem estiver perto do local. Quem negar a localização ou estiver longe é mandado para a recepção. Dentro de prédios o celular pode errar; use um raio folgado.</span></span></label>
+          <div class="qc-geo" id="qcGeoCampos">
+            <label>Local do evento <span class="dica">latitude, longitude (no Google Maps: clique com o botão direito no local e copie os números)</span>
+              <input id="qcCoord" placeholder="-3.1190, -60.0217" inputmode="decimal" autocomplete="off"></label>
+            <div class="linha-botoes">
+              <button class="botao link pequeno" type="button" id="qcMeuLocal">usar minha localização atual</button>
+              <a class="botao link pequeno" id="qcMapa" target="_blank" rel="noopener" hidden>ver no mapa</a>
+              <span class="dica" id="qcLocalInfo"></span>
+            </div>
+            <label>Raio <select id="qcRaio">
+              <option value="100">100 m</option><option value="200">200 m</option><option value="300">300 m</option>
+              <option value="500">500 m</option><option value="1000">1 km</option><option value="2000">2 km</option></select></label>
+          </div>
+          <div class="rodape-form">
+            <span class="estado" id="qcEstado"></span>
+            <button class="botao primario" type="button" id="qcSalvar">Salvar QR dos convidados</button>
+          </div>
+        </div>
+        <div class="qc-qr">
+          <div class="qr-imagem" id="qcQr"></div>
+          <p class="dica" id="qcQrNota"></p>
+          <div class="linha-botoes centro">
+            <button class="botao pequeno" type="button" id="qcA4">Cartaz A4</button>
+            <button class="botao pequeno" type="button" id="qcA5">Meia folha (2 por A4)</button>
+            <a class="botao pequeno" id="qcTela" target="_blank" rel="noopener">Abrir tela cheia</a>
+            <button class="botao link pequeno" type="button" id="qcCopiar">Copiar link</button>
+            <button class="botao pequeno perigo" type="button" id="qcTrocar">Trocar QR</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Operação -->
+  <section class="aba" id="aba-operacao" hidden>
+    <div class="operacoes">
+      <div class="cartao op">
+        <div>
+          <h2>Relatório de presença</h2>
+          <p class="suave">Planilha Excel com resumo (horário de pico, chegadas por meia hora, por tablet), presentes, quem confirmou e não veio, uma aba por lista VIP e presença por empresa. Pode baixar a qualquer momento, inclusive durante o evento.</p>
+        </div>
+        <button class="botao primario" type="button" id="btnRelatorio">Baixar relatório (Excel)</button>
+      </div>
+      <div class="cartao op">
+        <div>
+          <h2 id="opEncTitulo">Encerrar check-in</h2>
+          <p class="suave" id="opEncTexto">Deixa tudo só para consulta: os tablets param de confirmar e cadastrar, mas o painel e o relatório continuam. Pode reabrir depois.</p>
+        </div>
+        <div class="linha-botoes">
+          <button class="botao" type="button" id="btnAdiar" hidden>Adiar horário</button>
+          <button class="botao" type="button" id="btnEncerrar">Encerrar check-in</button>
+        </div>
+      </div>
+      <div class="cartao op">
+        <div>
+          <h2>Duplicar evento</h2>
+          <p class="suave">Cria um evento novo com a mesma identidade e as mesmas listas VIP (sem pessoas e sem presenças).</p>
+        </div>
+        <button class="botao" type="button" id="btnDuplicar">Duplicar</button>
+      </div>
+      <div class="cartao op perigo">
+        <div>
+          <h2>Zerar presenças</h2>
+          <p class="suave">Use depois dos testes, antes de abrir as portas. Apaga as presenças e os cadastros na hora. As listas continuam.</p>
+        </div>
+        <button class="botao perigo" type="button" id="btnZerar">Zerar presenças</button>
+      </div>
+      <div class="cartao op perigo">
+        <div>
+          <h2>Apagar dados pessoais</h2>
+          <p class="suave">Depois do evento (LGPD): apaga nomes das listas, presenças e cadastros na hora. Ficam só os números e a configuração. Baixe o relatório antes.</p>
+        </div>
+        <button class="botao perigo" type="button" id="btnApagarDados">Apagar dados pessoais</button>
+      </div>
+      <div class="cartao op perigo">
+        <div>
+          <h2>Excluir evento</h2>
+          <p class="suave">Apaga o evento inteiro: configuração, identidade, listas e presenças. O link deixa de funcionar. Não tem volta.</p>
+        </div>
+        <button class="botao perigo" type="button" id="btnExcluir">Excluir evento</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Certificados -->
+  <section class="aba" id="aba-certificados" hidden>
+    <form class="cartao formulario" id="formCertificado" autocomplete="off" novalidate>
+      <div class="cabeca-cartao">
+        <div>
+          <h2>Emissão de certificados</h2>
+          <p class="suave">Configure os certificados para quem tiver presença confirmada no evento.</p>
+        </div>
+        <div class="linha-botoes">
+          <span class="estado" id="certEstado"></span>
+          <button class="botao primario" type="submit" id="btnSalvarCert">Salvar alterações</button>
+        </div>
+      </div>
+
+      <fieldset class="modos">
+        <legend>Ativação</legend>
+        <label class="modo">
+          <input type="checkbox" id="certAtivo">
+          <span class="modo-cartao">
+            <b>Habilitar certificados para este evento</b>
+            <span>Permite emitir certificados e ativa o botão de WhatsApp no comprovante do participante.</span>
+          </span>
+        </label>
+      </fieldset>
+
+      <div class="campos" id="camposCertificado">
+        <div class="largo campo-encerra">
+          <label for="certLiberaEm">Liberar certificados a partir de <span class="dica">horário em que os participantes podem baixar seus certificados</span></label>
+          <div class="linha-encerra">
+            <input id="certLiberaEm" type="datetime-local">
+            <button class="botao link pequeno" type="button" id="certLiberaAgora">liberar agora</button>
+            <button class="botao link pequeno" type="button" id="certLiberaEncerra">no encerramento do check-in</button>
+            <button class="botao link pequeno" type="button" id="certLiberaLimpar">sempre liberado</button>
+          </div>
+          <span class="dica" id="certLiberaInfo"></span>
+        </div>
+
+        <label>Carga horária (horas) <span class="dica">ex.: 4 ou 8</span><input id="certHoras" type="number" min="0" max="999" step="0.5" placeholder="Ex.: 4"></label>
+        <label>Instituição / Emissor <span class="dica">ex.: Sistema FIEAM / IEL</span><input id="certEmissor" maxlength="120" placeholder="Ex.: Sistema FIEAM / IEL"></label>
+
+        <label class="largo">Texto do certificado <span class="dica">as tags {nome}, {evento}, {data}, {horas} são preenchidas sozinhas</span>
+          <textarea id="certTexto" rows="3" maxlength="600" style="font:inherit; padding:10px 14px; border-radius:12px; border:1px solid var(--borda); background:var(--fundo-campo); color:var(--texto); width:100%; box-sizing:border-box;"></textarea>
+        </label>
+
+        <div class="linha-tags largo" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13px;">
+          <span class="suave">Inserir no texto:</span>
+          <button class="botao link pequeno" type="button" data-tag="{nome}">{nome}</button>
+          <button class="botao link pequeno" type="button" data-tag="{evento}">{evento}</button>
+          <button class="botao link pequeno" type="button" data-tag="{data}">{data}</button>
+          <button class="botao link pequeno" type="button" data-tag="{horas}">{horas}</button>
+        </div>
+
+        <label>Nome de quem assina <input id="certAssinaturaNome" maxlength="100" placeholder="Ex.: Hudson Batista"></label>
+        <label>Cargo de quem assina <input id="certAssinaturaCargo" maxlength="100" placeholder="Ex.: Coordenação de Eventos"></label>
+
+        <div class="largo">
+          <label>Assinatura digitalizada (opcional) <span class="dica">imagem com fundo transparente (PNG) ou branco</span></label>
+          <div class="linha-foto" style="display:flex; gap:12px; align-items:center; margin-top:6px;">
+            <input type="file" id="certAssinaturaArquivo" accept="image/png,image/jpeg,image/webp" hidden>
+            <button class="botao" type="button" id="btnEscolherAssinatura">Escolher imagem</button>
+            <button class="botao link perigo" type="button" id="btnRemoverAssinatura" hidden>Remover</button>
+            <img id="certAssinaturaImg" alt="Assinatura" style="max-height:40px; max-width:140px; object-fit:contain; border:1px solid var(--borda); border-radius:6px; padding:2px;" hidden>
+          </div>
+        </div>
+      </div>
+
+      <div class="linha-botoes" style="display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:16px;">
+        <span class="estado" id="certEstadoBaixo"></span>
+        <button class="botao primario" type="submit" id="btnSalvarCertBaixo">Salvar alterações</button>
+      </div>
+
+      <!-- Prévia do certificado -->
+      <div class="cartao" style="margin-top:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div>
+            <h3 style="margin:0;">Prévia do certificado</h3>
+            <p class="suave" style="margin:2px 0 0;">Visualização de como o certificado será impresso ou gerado em PDF.</p>
+          </div>
+        </div>
+        <div style="overflow-x:auto; background:#cbd5e1; padding:16px; border-radius:12px; display:grid; place-items:center;">
+          <div id="certPreviaArea" style="width:100%; max-width:800px;"></div>
+        </div>
+      </div>
+
+      <!-- Emissão em lote -->
+      <div class="cartao op" style="margin-top:20px;">
+        <div>
+          <h3>Emissão em lote</h3>
+          <p class="suave">Baixe ou imprima os certificados de todas as pessoas presentes de uma só vez (um certificado por página).</p>
+          <span class="dica" id="certLoteInfo"></span>
+        </div>
+        <button class="botao primario" type="button" id="btnBaixarTodosCert">Imprimir / Salvar todos em PDF</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<!-- ======================= JANELAS ======================= -->
+<div class="janela-fundo" id="janela" hidden>
+  <form class="janela" id="janelaForm" novalidate role="dialog" aria-modal="true" aria-labelledby="janelaTitulo" autocomplete="off">
+    <h2 id="janelaTitulo"></h2>
+    <div id="janelaCorpo"></div>
+    <p class="erro" id="janelaErro" hidden></p>
+    <div class="linha-botoes fim">
+      <button class="botao" type="button" id="janelaCancelar">Cancelar</button>
+      <button class="botao primario" type="submit" id="janelaOk">OK</button>
+    </div>
+  </form>
+</div>
+
+<div class="menu-cor" id="menuCor" hidden role="menu">
+  <span class="menu-cor-titulo">Usar esta cor como:</span>
+  <button type="button" role="menuitem" data-usar="fundo1">Fundo (início)</button>
+  <button type="button" role="menuitem" data-usar="fundo2">Fundo (fim)</button>
+  <button type="button" role="menuitem" data-usar="destaque">Destaque</button>
+  <button type="button" role="menuitem" data-usar="destaque2">Segundo destaque</button>
+</div>
+
+<div class="aviso-rapido" id="toast" role="status" hidden></div>
+
+<!-- Cartão de acesso para imprimir -->
+<div class="impressao" id="impressao" aria-hidden="true"></div>
+
+<script src="/vendor/supabase.min.js"></script>
+<script src="/vendor/qrcode.js"></script>
+<script src="/js/config.js?v=202610181217"></script>
+<script src="/js/comum.js?v=202610181217"></script>
+<script src="/js/presenca.js?v=202610181217"></script>
+<script src="/js/relatorio.js?v=202610181217"></script>
+<script src="/js/imagens.js?v=202610181217"></script>
+<script src="/js/acesso.js?v=202610181217"></script>
+<script src="/js/lista.js?v=202610181217"></script>
+<script src="/js/admin-listas.js?v=202610181217"></script>
+<script src="/js/admin.js?v=202610181217"></script>
+</body>
+</html>

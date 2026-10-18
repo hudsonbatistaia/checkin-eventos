@@ -1,0 +1,11 @@
+{
+  "name": "testes-checkin-eventos",
+  "private": true,
+  "description": "Testes locais do Check-in de Eventos (banco de teste PGlite, navegador Edge automático)",
+  "type": "module",
+  "dependencies": {
+    "@electric-sql/pglite": "0.2.17",
+    "puppeteer-core": "23.11.1",
+    "xlsx-js-style": "1.2.0"
+  }
+}

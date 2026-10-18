@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Prévia da recepção</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/evento.css?v=202610181217">
+<style>
+  /* A prévia não é clicável: só mostra como fica. */
+  body { pointer-events: none; user-select: none; }
+</style>
+</head>
+<body data-view="recepcao">
+<header class="top">
+  <div class="brand">
+    <img class="logo" id="logo" alt="" hidden>
+    <div class="where"><b id="titulo">Recepção</b><span id="sub">Confirmação de presença</span></div>
+  </div>
+  <span class="live"><i></i><span>Online</span></span>
+  <nav class="nav" aria-label="Telas">
+    <a aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/><path d="m16 11 2 2 4-4"/></svg>Recepção</a>
+    <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><rect x="5" y="11" width="3" height="7" rx="1"/><rect x="10.5" y="6" width="3" height="12" rx="1"/><rect x="16" y="13" width="3" height="5" rx="1"/></svg>Painel</a>
+  </nav>
+</header>
+<main>
+  <div class="hero" id="hero">
+    <img id="arte" alt="" hidden>
+    <div class="titulo" id="heroTitulo"><h1 id="heroNome"></h1><p id="heroSub"></p></div>
+  </div>
+  <div class="find">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="text" tabindex="-1" placeholder="Nome ou empresa">
+    </div>
+    <button class="add-cta" type="button" tabindex="-1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M3 20c0-3.3 3.1-6 7-6 1.3 0 2.5.3 3.5.8"/><path d="M18 14v6M15 17h6"/></svg>
+      <span id="addTxt">Cadastrar agora</span>
+    </button>
+  </div>
+  <div class="meta"><span class="count"><b class="tabnum">42</b> presentes</span></div>
+  <ul class="results" id="results"></ul>
+</main>
+<div class="faixa-cores" aria-hidden="true"></div>
+
+<script src="/js/comum.js?v=202610181217"></script>
+<script>
+(() => {
+  "use strict";
+  const C = window.Comum, $ = (id) => document.getElementById(id);
+  const ESTRELA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C12.9 8.6 15.4 11.1 21.5 12 15.4 12.9 12.9 15.4 12 21.5 11.1 15.4 8.6 12.9 2.5 12 8.6 11.1 11.1 8.6 12 2.5Z" fill="currentColor"/></svg>';
+  function selo(l) {
+    const cor = l.cor || "#F6B04C";
+    return `<span class="selo" style="--cor:${cor};--sobre-cor:${C.sobre(C.hexRgb(cor))}">${ESTRELA}${C.esc(l.nome)}</span>`;
+  }
+  function mostrar(d) {
+    C.aplicarTema(document.documentElement, d.tema);
+    const ev = d.evento || {};
+    const totem = ev.modo === "totem";
+    document.body.classList.toggle("totem", totem);
+    document.body.classList.toggle("typing", !!d.buscando);
+    $("logo").hidden = !d.logo; if (d.logo) $("logo").src = d.logo;
+    $("titulo").textContent = totem ? (ev.nome || "Nome do evento") : "Recepção";
+    $("sub").textContent = totem ? "Confirme sua presença" : "Confirmação de presença";
+    $("arte").hidden = !d.arte; if (d.arte) $("arte").src = d.arte;
+    $("heroTitulo").hidden = !!d.arte;
+    $("heroNome").textContent = ev.nome || "Nome do evento";
+    $("heroSub").textContent = [ev.subtitulo, C.dataExtenso(ev.data)].filter(Boolean).join(" · ");
+    $("q").placeholder = totem ? "Digite seu nome" : "Nome ou empresa";
+    $("q").value = d.buscando ? "ana" : "";
+    $("addTxt").textContent = totem ? "Não encontrei meu nome" : "Cadastrar agora";
+    const vips = (d.vips && d.vips.length ? d.vips : [{ nome: "Destaque", cor: (d.tema && d.tema.destaque2) || "#F6B04C" }]).filter((l) => l.selo !== false);
+    const v = vips[0];
+    const botao = totem ? "Sou eu" : "Confirmar";
+    $("results").innerHTML = !d.buscando ? "" : `
+      <li class="res${v ? " vip" : ""}" ${v ? `style="--faixa:${v.cor}"` : ""}><div><div class="n"><mark>Ana</mark> Beatriz Souza</div><div class="c">Empresa Exemplo</div>${v ? `<div class="tags">${selo(v)}</div>` : ""}</div><button class="go" type="button">${botao}</button></li>
+      <li class="res"><div><div class="n"><mark>Ana</mark> Carolina Lima</div><div class="c">Instituto Modelo</div></div><button class="go" type="button">${botao}</button></li>
+      <li class="res done"><div><div class="n">Juli<mark>ana</mark> Pereira</div><div class="c">Indústria Demonstração</div></div><div class="arrived"><span class="ok">✓ Chegou 19:04</span><span class="dev">Tablet 1</span></div></li>`;
+  }
+  window.addEventListener("message", (e) => { if (e.origin === location.origin && e.data && e.data.previa) mostrar(e.data); });
+  mostrar({ tema: C.TEMA_PADRAO, evento: {} });
+  if (window.parent !== window) window.parent.postMessage({ previaPronta: true }, location.origin);
+})();
+</script>
+</body>
+</html>

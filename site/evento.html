@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Check-in</title>
+<meta name="theme-color" content="#0B2545" id="corTema">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b1f33'/%3E%3Cpath d='m28 52 15 15 30-32' fill='none' stroke='%232fd3dc' stroke-width='11' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/evento.css?v=202610181217">
+</head>
+<body data-view="carregando">
+
+<!-- ================= Carregando / erro ================= -->
+<div class="entrada" id="telaAviso">
+  <div class="entrada-cartao">
+    <h1 id="avisoTitulo">Carregando…</h1>
+    <p id="avisoTexto"></p>
+  </div>
+</div>
+
+<!-- ================= Código de acesso ================= -->
+<div class="entrada" id="telaCodigo" hidden>
+  <form class="entrada-cartao" id="formCodigo" autocomplete="off" novalidate>
+    <img class="arte-mini" id="codigoArte" alt="" hidden>
+    <h1 id="codigoNome"></h1>
+    <p id="codigoInfo"></p>
+    <label for="campoCodigo"><b>Código do evento</b></label>
+    <input class="codigo-campo" id="campoCodigo" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" aria-describedby="codigoErro">
+    <p class="erro" id="codigoErro" role="alert"></p>
+    <button class="btn primary" type="submit" id="btnCodigo">Entrar</button>
+    <p class="dica-codigo">O código fica com a organização do evento.</p>
+  </form>
+</div>
+
+<!-- ================= Aplicação ================= -->
+<header class="top" id="topo" hidden>
+  <div class="brand">
+    <img class="logo" id="logo" alt="" hidden>
+    <div class="where"><b id="viewTitle">Recepção</b><span id="viewSub"></span></div>
+  </div>
+  <span class="live off" id="live"><i></i><span id="liveTxt">Conectando…</span></span>
+  <span class="chip" id="deviceChip" hidden>Este aparelho: <strong id="deviceName"></strong> <button type="button" id="deviceEdit">trocar</button></span>
+  <nav class="nav" id="nav" aria-label="Telas">
+    <a href="#recepcao" data-view="recepcao"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/><path d="m16 11 2 2 4-4"/></svg>Recepção</a>
+    <a href="#painel" data-view="painel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><rect x="5" y="11" width="3" height="7" rx="1"/><rect x="10.5" y="6" width="3" height="12" rx="1"/><rect x="16" y="13" width="3" height="5" rx="1"/></svg>Painel</a>
+    <a href="#certificado" data-view="certificado" id="navCertificado" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15l-2 5 2-1 2 1-2-5"/><path d="M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14z"/></svg>Certificados</a>
+  </nav>
+</header>
+<div class="banner encerrado" id="consultaAviso" hidden><b>Evento encerrado.</b> Somente consulta: as informações podem ser vistas, mas não alteradas.</div>
+<div class="banner" id="offline" hidden>Sem conexão. As confirmações não estão sendo salvas: aguarde a conexão voltar.</div>
+<div class="banner aviso-encerra" id="avisoEncerra" role="status" hidden></div>
+
+<!-- Check-in encerrado (botão Encerrar ou horário marcado): a recepção some, o painel continua -->
+<div class="entrada" id="telaEncerrado" hidden>
+  <div class="entrada-cartao">
+    <img class="arte-mini" id="encArte" alt="" hidden>
+    <h1>Check-in encerrado</h1>
+    <p id="encTexto"></p>
+    <a class="btn primary" href="#painel" id="btnVerPainel">Ver painel</a>
+  </div>
+</div>
+
+<!-- Recepção (equipe) e totem -->
+<main id="v-recepcao" hidden>
+  <div class="hero" id="hero">
+    <img id="arte" alt="" hidden>
+    <div class="titulo" id="heroTitulo"><h1 id="heroNome"></h1><p id="heroSub"></p></div>
+  </div>
+  <p class="totem-chamada" id="totemChamada" hidden>Digite seu nome para confirmar sua presença</p>
+  <div class="find">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Nome ou empresa" aria-label="Buscar por nome ou empresa">
+      <button class="clear" id="qClear" type="button" aria-label="Limpar busca" hidden>×</button>
+    </div>
+    <button class="add-cta" type="button" data-add>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M3 20c0-3.3 3.1-6 7-6 1.3 0 2.5.3 3.5.8"/><path d="M18 14v6M15 17h6"/></svg>
+      <span id="addTxt">Cadastrar agora</span>
+    </button>
+  </div>
+  <div class="meta" id="meta"><span class="count"><b class="tabnum" id="rIn">0</b> presentes <span id="rOf"></span></span></div>
+  <ul class="results" id="results" aria-live="polite"></ul>
+  <section class="recent" id="recent" hidden>
+    <h2>Últimas chegadas</h2>
+    <ul id="recentList"></ul>
+  </section>
+</main>
+
+<!-- Painel -->
+<main id="v-painel" hidden>
+  <section class="hero-in" aria-label="Presentes no evento">
+    <div class="hero-num"><span class="hero-k">Presentes no evento</span><b class="tabnum" id="kIn">0</b></div>
+    <div class="hero-prog">
+      <div class="hero-pct" id="kPct"></div>
+      <div class="meter hero-meter"><span id="kBar" style="width:0%"></span></div>
+      <div class="hero-sub" id="kSub"></div>
+    </div>
+  </section>
+  <div class="highlights" id="blocos"></div>
+  <section class="kpis" aria-label="Resumo">
+    <div class="kpi"><div class="k" id="kConfTit">Confirmaram e vieram</div><div class="v tabnum" id="kConf">0</div></div>
+    <div class="kpi"><div class="k" id="kAusTit">Confirmaram e faltam chegar</div><div class="v tabnum" id="kAus">0</div></div>
+    <div class="kpi"><div class="k" id="kInvTit">Vieram sem confirmar</div><div class="v tabnum" id="kInv">0</div></div>
+    <div class="kpi"><div class="k" id="kWalkTit">Cadastros na hora</div><div class="v tabnum" id="kWalk">0</div></div>
+  </section>
+  <section class="cats" id="cards" aria-label="Listas VIP"></section>
+  <div class="p-tools">
+    <input id="pq" type="search" placeholder="Filtrar por nome ou empresa" aria-label="Filtrar por nome ou empresa" autocomplete="off">
+    <button class="pbtn" id="exportBtn" type="button">Baixar relatório (Excel)</button>
+  </div>
+  <section class="cols">
+    <div class="col in"><h2>Chegaram <span class="ct tabnum" id="cIn">0</span></h2><ul class="rows" id="listIn"></ul></div>
+    <div class="col"><h2><span id="tituloFaltam">Confirmaram e faltam chegar</span> <span class="ct tabnum" id="cOut">0</span></h2><ul class="rows" id="listOut"></ul></div>
+  </section>
+</main>
+
+<!-- Tela cheia do QR dos convidados (tablet/TV na entrada) -->
+<main class="tela-qr" id="v-qr" hidden>
+  <img class="qr-arte" id="qrArte" alt="" hidden>
+  <h1>Faça seu check-in pelo celular</h1>
+  <div class="qr-caixa"><div id="qrImagem" role="img" aria-label="QR code do check-in"></div></div>
+  <div class="qr-tempo" id="qrTempo" hidden><span id="qrBarra"></span></div>
+  <ol class="qr-passos"><li>Aponte a câmera do celular</li><li>Preencha seus dados</li><li>Mostre o comprovante</li></ol>
+  <p class="qr-link" id="qrLink"></p>
+  <p class="qr-aviso" id="qrAviso" hidden></p>
+</main>
+
+<div class="faixa-cores" aria-hidden="true" id="faixa" hidden></div>
+
+<!-- Cadastrar agora -->
+<div class="stage" id="addStage" hidden>
+  <form class="sheet" id="addForm" autocomplete="off" novalidate role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <h2 id="addTitle">Cadastrar agora</h2>
+    <p id="addTexto">Para quem chegou e não está em nenhuma lista. A presença já fica confirmada.</p>
+    <label class="largo">Nome completo <input id="aNome" type="text" maxlength="120" autocomplete="off"></label>
+    <div class="campos-form" id="aCampos"></div>
+    <label class="lgpd" id="aLgpd" hidden><input type="checkbox" id="aConsente"> <span id="aLgpdTexto"></span></label>
+    <div class="dup" id="aDup" hidden></div>
+    <div class="actions">
+      <button class="btn ghost" id="addCancel" type="button">Cancelar</button>
+      <button class="btn primary" id="addSave" type="submit">Cadastrar e confirmar presença</button>
+    </div>
+    <p class="errmsg" id="aErr" hidden></p>
+  </form>
+</div>
+
+<!-- Nome do aparelho -->
+<div class="stage" id="devStage" hidden>
+  <form class="sheet" id="devForm" autocomplete="off" novalidate role="dialog" aria-modal="true" aria-labelledby="devTitle">
+    <h2 id="devTitle">Nome deste aparelho</h2>
+    <p>Aparece no painel e no relatório para saber em qual tablet cada presença foi confirmada.</p>
+    <label>Nome <input id="devInput" type="text" maxlength="30" placeholder="Ex.: Tablet 1"></label>
+    <div class="actions">
+      <button class="btn ghost" id="devSair" type="button">Sair deste evento</button>
+      <button class="btn primary" type="submit">Salvar</button>
+    </div>
+  </form>
+</div>
+
+<!-- Boas-vindas (totem) -->
+<div class="boasvindas" id="boasvindas" hidden role="status" aria-live="assertive">
+  <div>
+    <div class="bv-check" aria-hidden="true">✓</div>
+    <h1 id="bvNome"></h1>
+    <p id="bvTexto"></p>
+    <div id="bvSelos"></div>
+  </div>
+</div>
+
+<!-- Certificados (Página pública por CPF / Nome) -->
+<main id="v-certificado" hidden>
+  <div class="hero">
+    <img id="certArte" alt="" hidden>
+    <div class="titulo">
+      <h1 id="certEventoNome">Certificado de Participação</h1>
+      <p id="certEventoInfo"></p>
+    </div>
+  </div>
+  <div class="sheet" style="max-width:540px; margin:20px auto; padding:24px;">
+    <h2>Consultar certificado</h2>
+    <p class="suave" id="certSubtituloBusca">Digite seu CPF para emitir seu certificado com segurança.</p>
+    <form id="formBuscaCert" autocomplete="off" style="margin-top:14px;">
+      <div style="display:flex; gap:8px;">
+        <input id="campoBuscaCert" type="text" placeholder="000.000.000-00" required inputmode="numeric" style="flex:1; padding:12px 16px; border-radius:999px; border:1px solid var(--linha); background:var(--superficie); color:var(--tinta);">
+        <button class="btn primary" type="submit" id="btnBuscarCert">Consultar</button>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+        <button class="btn link pequeno" type="button" id="btnAlternarTipoBusca" style="background:none; border:0; color:var(--destaque); cursor:pointer; font-size:13px; padding:0;">Buscar por nome completo ›</button>
+      </div>
+      <p class="errmsg" id="certErro" role="alert" hidden style="margin-top:10px;"></p>
+    </form>
+
+    <!-- Confirmação de segurança quando busca por nome -->
+    <div id="certSeguranca" hidden style="margin-top:16px; background:var(--superficie-2); padding:16px; border-radius:14px; text-align:left;">
+      <p style="margin:0 0 6px; font-weight:700; color:var(--tinta); font-size:15px;">🔒 Confirmação de segurança</p>
+      <p class="suave" style="margin:0 0 10px; font-size:13px;" id="certSegurancaMsg">Para garantir sua privacidade, confirme os <b>3 primeiros dígitos</b> do seu CPF cadastrado:</p>
+      <div style="display:flex; gap:8px;">
+        <input id="campoConfirmaDigitos" type="text" maxlength="3" placeholder="Ex.: 123" inputmode="numeric" style="width:110px; text-align:center; padding:10px 14px; border-radius:10px; border:1px solid var(--linha); font-size:18px; font-weight:700; letter-spacing:2px; background:var(--superficie); color:var(--tinta);">
+        <button class="btn primary" type="button" id="btnConfirmarSeguranca" style="flex:1;">Liberar certificado</button>
+      </div>
+      <p class="errmsg" id="certSegurancaErro" hidden style="margin-top:8px;"></p>
+    </div>
+
+    <div id="certMultiplos" hidden style="margin-top:16px;">
+      <p class="suave" style="margin:0 0 10px; font-weight:600; font-size:14px;">Encontramos mais de um participante. Escolha seu nome:</p>
+      <div id="certListaMultiplos" style="display:grid; gap:8px;"></div>
+    </div>
+    <div id="certResultado" hidden style="margin-top:18px;">
+      <div class="sheet" style="background:var(--superficie-2); padding:16px; border-radius:14px; text-align:center;">
+        <h3 id="certResNome" style="margin:0; font-size:18px;"></h3>
+        <p id="certResMsg" style="margin:6px 0 0; font-size:14px; color:var(--tinta-suave);"></p>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+          <button class="btn comp-btn-zap" type="button" id="btnZapCertPublico">Salvar link no meu WhatsApp</button>
+          <button class="btn primary" type="button" id="btnVerCertPublico" hidden>Baixar meu Certificado (PDF)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Validação pública de autenticidade (#validar&cod=...) -->
+<main id="v-validar" hidden>
+  <div class="sheet" style="max-width:540px; margin:40px auto; padding:24px; text-align:center;">
+    <div class="comp-check" id="valCheck" aria-hidden="true" style="margin:0 auto 12px;"><span>✓</span></div>
+    <h2 id="valTitulo" style="margin:0;">Validação de Certificado</h2>
+    <p id="valMsg" class="suave" style="margin:8px 0 0;"></p>
+    <div id="valDetalhes" hidden style="margin-top:18px; text-align:left; background:var(--superficie-2); padding:16px; border-radius:14px; font-size:14px; display:grid; gap:8px;">
+      <div><b>Participante:</b> <span id="valNome"></span></div>
+      <div><b>Evento:</b> <span id="valEvento"></span></div>
+      <div><b>Carga horária:</b> <span id="valHoras"></span></div>
+      <div><b>Data de emissão:</b> <span id="valData"></span></div>
+      <div><b>Código:</b> <span id="valCodigo" style="font-family:monospace; font-weight:700;"></span></div>
+    </div>
+    <div style="margin-top:20px;">
+      <a class="btn" href="#recepcao" id="valVoltar">Voltar para o evento</a>
+    </div>
+  </div>
+</main>
+
+<!-- Visualização e impressão do certificado em tela cheia -->
+<div class="modal-cert" id="modalCert" hidden>
+  <div class="modal-cert-conteudo">
+    <div class="modal-cert-botoes">
+      <button class="btn" type="button" id="btnFecharCert">Fechar</button>
+      <button class="btn primary" type="button" id="btnImprimirCert">Imprimir / Salvar PDF</button>
+    </div>
+    <div class="modal-cert-papel" id="certContainer"></div>
+  </div>
+</div>
+
+<div class="impressao impressao-certificados" id="impressaoCert" aria-hidden="true"></div>
+
+<div class="toast" id="toast" role="status" hidden><div class="msg" id="toastMsg"></div><button type="button" id="toastBtn" hidden>Desfazer</button></div>
+
+<script src="/vendor/supabase.min.js"></script>
+<script src="/vendor/qrcode.js"></script>
+<script src="/js/config.js?v=202610181217"></script>
+<script src="/js/comum.js?v=202610181217"></script>
+<script src="/js/formulario.js?v=202610181217"></script>
+<script src="/js/presenca.js?v=202610181217"></script>
+<script src="/js/relatorio.js?v=202610181217"></script>
+<script src="/js/evento.js?v=202610181217"></script>
+</body>
+</html>
