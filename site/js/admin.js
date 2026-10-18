@@ -191,7 +191,7 @@
     document.querySelectorAll(".aba").forEach((s) => { s.hidden = s.id !== "aba-" + aba; });
     if (aba === "identidade") { carregarImagensSalvas(); ajustarPrevia(); }
     if (aba === "dados" || aba === "operacao") atualizarEncerramento().catch(() => {});
-    if (aba === "acesso") preencherQrConvidados();
+    if (aba === "acesso") { preencherQrConvidados(); carregarBloqueios(); }
     if (aba === "convidados" || aba === "vip") window.Listas.mostrar(aba);
     if (aba === "certificados") {
       atualizarInfoLiberaCert();
@@ -572,6 +572,8 @@
       await rpc("salvar_evento", { p_id: evento.id, p_dados: dados });
       await atualizarQrDados();
       $("qcEstado").textContent = "Salvo ✓"; $("qcEstado").className = "estado salvo";
+      toast("Configurações do QR salvas com sucesso!");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) { toast("Não foi possível salvar: " + e.message, true); }
     finally { $("qcSalvar").disabled = false; }
   });
@@ -602,6 +604,78 @@
   }
   $("qcA4").addEventListener("click", () => imprimirCartaz("a4"));
   $("qcA5").addEventListener("click", () => imprimirCartaz("a5"));
+
+  /* ================= Tentativas Bloqueadas por Localização ================= */
+  async function carregarBloqueios() {
+    if (!evento) return;
+    const badge = $("bloqueiosBadge");
+    const vazio = $("bloqueiosVazio");
+    const tabelaWrapper = $("bloqueiosTabelaWrapper");
+    const lista = $("bloqueiosLista");
+    if (!badge || !vazio || !tabelaWrapper || !lista) return;
+
+    try {
+      const bloqueios = await rpc("obter_bloqueios_geo", { p_id: evento.id }) || [];
+      badge.textContent = String(bloqueios.length);
+      badge.style.display = bloqueios.length ? "inline-flex" : "none";
+
+      if (!bloqueios.length) {
+        vazio.hidden = false;
+        tabelaWrapper.hidden = true;
+        lista.innerHTML = "";
+        return;
+      }
+
+      vazio.hidden = true;
+      tabelaWrapper.hidden = false;
+
+      lista.innerHTML = bloqueios.map((b) => {
+        const hora = b.em ? new Date(b.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—";
+        const dataDia = b.em ? new Date(b.em).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "";
+        
+        let motivoHtml = "";
+        if (b.motivo === "longe") {
+          motivoHtml = `<span class="tag-motivo longe">Fora do local</span>`;
+        } else if (b.motivo === "sem_local") {
+          motivoHtml = `<span class="tag-motivo sem-local">Sem GPS / Negou</span>`;
+        } else {
+          motivoHtml = `<span class="tag-motivo impreciso">Sinal impreciso</span>`;
+        }
+
+        const distStr = b.distancia_metros != null
+          ? (b.distancia_metros >= 1000 ? `${(b.distancia_metros / 1000).toFixed(1)} km` : `${Math.round(b.distancia_metros)} m`)
+          : "—";
+
+        const raioStr = b.raio_permitido ? ` (raio: ${b.raio_permitido >= 1000 ? (b.raio_permitido / 1000) + ' km' : b.raio_permitido + ' m'})` : "";
+
+        let linkMapa = "—";
+        if (b.lat != null && b.lng != null) {
+          linkMapa = `<a href="https://www.google.com/maps?q=${b.lat},${b.lng}" target="_blank" rel="noopener" class="btn-mapa" title="Abrir no Google Maps"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Ver no mapa</a>`;
+        }
+
+        const contatos = [];
+        if (b.cpf) contatos.push(`CPF: ${esc(b.cpf)}`);
+        if (b.telefone) contatos.push(`Tel: ${esc(b.telefone)}`);
+        if (b.email) contatos.push(esc(b.email));
+
+        return `<tr>
+          <td><span class="tabnum"><b>${hora}</b></span><br><span class="dica">${dataDia}</span></td>
+          <td><b>${esc(b.nome || "Não informado")}</b>${b.empresa ? `<br><span class="suave">${esc(b.empresa)}</span>` : ""}</td>
+          <td><span class="dica">${contatos.join(" · ") || "—"}</span></td>
+          <td>${motivoHtml}</td>
+          <td><b>${distStr}</b><br><span class="dica">${raioStr}</span></td>
+          <td>${linkMapa}</td>
+        </tr>`;
+      }).join("");
+
+    } catch (err) {
+      console.warn("Erro ao obter bloqueios:", err);
+    }
+  }
+  $("btnRecarregarBloqueios").addEventListener("click", () => {
+    carregarBloqueios();
+    toast("Lista de tentativas bloqueadas atualizada.");
+  });
   document.querySelectorAll("[data-copiar]").forEach((b) => b.addEventListener("click", () => copiar($(b.dataset.copiar).textContent)));
   $("btnNovoCodigo").addEventListener("click", async () => {
     const novo = await janela({
@@ -628,8 +702,10 @@
     try {
       // Busca os dados mais recentes (presenças podem ter mudado desde que a tela abriu).
       const d = await rpc("obter_evento", { p_id: evento.id });
+      let bloqueios = [];
+      try { bloqueios = await rpc("obter_bloqueios_geo", { p_id: evento.id }) || []; } catch (_) {}
       const m = window.Presenca.montar(d.listas, d.pessoas, d.checkins, d.avulsos);
-      const nome = await window.Relatorio.baixar(d, m, { cadastros: d.cadastros });   // com CPF e contatos (só a organização)
+      const nome = await window.Relatorio.baixar(d, m, { cadastros: d.cadastros, bloqueios });
       toast("Relatório gerado: " + nome);
     } catch (e) { toast("Não foi possível gerar o relatório: " + e.message, true); }
     finally { btn.disabled = false; btn.textContent = txt; }

@@ -4,7 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Check-in</title>
+<title>Check-in de Eventos — IEL Amazonas</title>
+<meta name="description" content="Recepção, totens e controle de presença digital do IEL Amazonas.">
+<!-- Open Graph / WhatsApp / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://checkin.hbone.com.br/">
+<meta property="og:site_name" content="Check-in de Eventos · IEL Amazonas">
+<meta property="og:title" content="Check-in de Eventos — IEL Amazonas">
+<meta property="og:description" content="Recepção, totens e controle de presença digital do IEL Amazonas.">
+<meta property="og:image" content="https://checkin.hbone.com.br/img/preview-compartilhamento.jpg">
+<meta property="og:image:secure_url" content="https://checkin.hbone.com.br/img/preview-compartilhamento.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="720">
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Check-in de Eventos — IEL Amazonas">
+<meta name="twitter:description" content="Recepção, totens e controle de presença digital do IEL Amazonas.">
+<meta name="twitter:image" content="https://checkin.hbone.com.br/img/preview-compartilhamento.jpg">
 <meta name="theme-color" content="#0B2545" id="corTema">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/css/evento.css?v=202610181303">
+<link rel="stylesheet" href="/css/evento.css?v=202610181349">
 </head>
 <body data-view="carregando">
 
@@ -109,6 +126,7 @@
     <div class="kpi"><div class="k" id="kAusTit">Confirmaram e faltam chegar</div><div class="v tabnum" id="kAus">0</div></div>
     <div class="kpi"><div class="k" id="kInvTit">Vieram sem confirmar</div><div class="v tabnum" id="kInv">0</div></div>
     <div class="kpi"><div class="k" id="kWalkTit">Cadastros na hora</div><div class="v tabnum" id="kWalk">0</div></div>
+    <div class="kpi kpi-bloqueio" id="kpiBloq" hidden><div class="k">Bloqueados (GPS)</div><div class="v tabnum" id="kBloq">0</div></div>
   </section>
   <section class="cats" id="cards" aria-label="Listas VIP"></section>
   <div class="p-tools">
@@ -118,6 +136,17 @@
   <section class="cols">
     <div class="col in"><h2>Chegaram <span class="ct tabnum" id="cIn">0</span></h2><ul class="rows" id="listIn"></ul></div>
     <div class="col"><h2><span id="tituloFaltam">Confirmaram e faltam chegar</span> <span class="ct tabnum" id="cOut">0</span></h2><ul class="rows" id="listOut"></ul></div>
+  </section>
+  <section class="col col-bloqueios" id="secBloqueios" hidden style="margin-top: 16px;">
+    <h2>
+      <span style="display:flex;align-items:center;gap:8px;">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" style="color:#DC2626;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Tentativas Bloqueadas por Localização (GPS)
+        <span class="ct tabnum" id="cBloq" style="background:rgba(220,38,38,.2);color:#DC2626;">0</span>
+      </span>
+      <button class="pbtn" type="button" id="btnRecarregarBloqPainel" style="padding: 4px 14px; font-size: 12px;">Atualizar</button>
+    </h2>
+    <ul class="rows" id="listBloqueios"></ul>
   </section>
 </main>
 
@@ -261,11 +290,11 @@
 
 <script src="/vendor/supabase.min.js"></script>
 <script src="/vendor/qrcode.js"></script>
-<script src="/js/config.js?v=202610181303"></script>
-<script src="/js/comum.js?v=202610181303"></script>
-<script src="/js/formulario.js?v=202610181303"></script>
-<script src="/js/presenca.js?v=202610181303"></script>
-<script src="/js/relatorio.js?v=202610181303"></script>
-<script src="/js/evento.js?v=202610181303"></script>
+<script src="/js/config.js?v=202610181349"></script>
+<script src="/js/comum.js?v=202610181349"></script>
+<script src="/js/formulario.js?v=202610181349"></script>
+<script src="/js/presenca.js?v=202610181349"></script>
+<script src="/js/relatorio.js?v=202610181349"></script>
+<script src="/js/evento.js?v=202610181349"></script>
 </body>
 </html>

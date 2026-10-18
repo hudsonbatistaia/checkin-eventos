@@ -482,6 +482,7 @@
     }
     P.chegadas(M).forEach((x) => vistos.add(x.tipo + ":" + x.id));
     voltarRolagem(rolagem);
+    carregarBloqueiosPainel();
   }
   $("pq").addEventListener("input", renderPainel);
   $("cards").addEventListener("toggle", (e) => { const d = e.target.closest("[data-card]"); if (d) { if (d.open) abertos.add(d.dataset.card); else abertos.delete(d.dataset.card); } }, true);
@@ -511,6 +512,63 @@
     catch (e) { toast("Não foi possível gerar o relatório: " + esc(e.message || e), null, true); }
     finally { b.disabled = false; b.textContent = txt; }
   });
+
+  /* ================= Bloqueios por GPS no Painel ================= */
+  let carregarBloqTimer = null;
+  async function carregarBloqueiosPainel() {
+    if (!codigo || !SLUG) return;
+    const kpi = $("kpiBloq"), sec = $("secBloqueios");
+    if (!kpi || !sec) return;
+
+    try {
+      const resp = await sb.rpc("bloqueios_geo_painel", { p_slug: SLUG, p_codigo: codigo });
+      if (resp.error || (resp.data && resp.data.erro)) return;
+      const bloqueios = resp.data || [];
+      const total = bloqueios.length;
+
+      $("kBloq").textContent = total;
+      $("cBloq").textContent = total;
+
+      if (total > 0 || (evento && evento.geo_ativo)) {
+        kpi.hidden = false;
+        sec.hidden = total === 0;
+      } else {
+        kpi.hidden = true;
+        sec.hidden = true;
+      }
+
+      if (total === 0) {
+        $("listBloqueios").innerHTML = `<li class="none">Nenhuma tentativa bloqueada até o momento.</li>`;
+        return;
+      }
+
+      $("listBloqueios").innerHTML = bloqueios.map((b) => {
+        const hora = b.em ? new Date(b.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
+        const distStr = b.distancia_metros != null ? (b.distancia_metros >= 1000 ? `${(b.distancia_metros / 1000).toFixed(1)} km` : `${Math.round(b.distancia_metros)} m`) : "—";
+        const mot = b.motivo === "longe" ? `Fora do local (${distStr})` : (b.motivo === "sem_local" ? "Sem GPS / Negou" : "Sinal impreciso");
+        const contatos = [b.empresa, b.cpf ? `CPF: ${b.cpf}` : null, b.telefone].filter(Boolean).join(" · ");
+        const link = b.lat != null && b.lng != null ? `<a href="https://www.google.com/maps?q=${b.lat},${b.lng}" target="_blank" rel="noopener" style="font-size:12px;color:var(--destaque);text-decoration:underline;">Ver mapa</a>` : "";
+
+        return `<li class="row">
+          <div>
+            <div class="n">${esc(b.nome || "Não informado")} <span class="selo" style="--cor:#DC2626;--sobre-cor:#FFF;background:#DC2626;color:#FFF;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;">${mot}</span></div>
+            ${contatos ? `<div class="c">${esc(contatos)}</div>` : ""}
+          </div>
+          <div style="text-align:right;">
+            <div class="t tabnum" style="color:#DC2626;">${hora}</div>
+            <div>${link}</div>
+          </div>
+        </li>`;
+      }).join("");
+    } catch (_) {}
+  }
+
+  if ($("btnRecarregarBloqPainel")) {
+    $("btnRecarregarBloqPainel").addEventListener("click", () => {
+      carregarBloqueiosPainel();
+      toast("Lista de bloqueios atualizada.");
+    });
+  }
 
   /* ================= Tela cheia do QR dos convidados ================= */
   let qrTimer = null, qrK = null;

@@ -158,6 +158,12 @@
       botao.textContent = "Confirmando sua localização…";
       try { local = await localizacao(); }
       catch {
+        try {
+          await sb.rpc("convidado_checkin", {
+            p_slug: SLUG, p_passe: passe, p_nome: f.nome, p_empresa: f.empresa, p_dados: f.dados,
+            p_lat: null, p_lng: null, p_precisao: null
+          });
+        } catch (_) {}
         botao.disabled = false; botao.textContent = "Fazer check-in";
         aviso("Não foi possível confirmar que você está no local", "Verifique se a localização do celular está ligada e permitida para o navegador, e escaneie o QR de novo. Ou " + RECEPCAO.charAt(0).toLowerCase() + RECEPCAO.slice(1));
         return;

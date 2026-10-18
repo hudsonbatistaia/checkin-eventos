@@ -176,16 +176,38 @@ create table if not exists checkin.qr_registros (
 );
 create index if not exists qr_registros_idx on checkin.qr_registros (evento_id, ip, em);
 
+-- Tentativas de check-in bloqueadas pela conferência de localização (GPS).
+create table if not exists checkin.bloqueios_geo (
+  id               bigint generated always as identity primary key,
+  evento_id        uuid not null references checkin.eventos(id) on delete cascade,
+  nome             text not null,
+  empresa          text not null default '',
+  cpf              text not null default '',
+  telefone         text not null default '',
+  email            text not null default '',
+  dados            jsonb not null default '{}'::jsonb,
+  motivo           text not null, -- 'longe', 'sem_local', 'local_impreciso'
+  distancia_metros double precision,
+  raio_permitido   double precision,
+  lat              double precision,
+  lng              double precision,
+  precisao         double precision,
+  ip               text not null default '',
+  em               timestamptz not null default now()
+);
+create index if not exists bloqueios_geo_evento_idx on checkin.bloqueios_geo (evento_id, em desc);
+
 -- ---------- Segurança: nada direto nas tabelas ----------
-alter table checkin.admins     enable row level security;
-alter table checkin.eventos    enable row level security;
-alter table checkin.imagens    enable row level security;
-alter table checkin.listas     enable row level security;
-alter table checkin.pessoas    enable row level security;
-alter table checkin.checkins   enable row level security;
-alter table checkin.avulsos    enable row level security;
-alter table checkin.tentativas enable row level security;
-alter table checkin.qr_registros enable row level security;
+alter table checkin.admins        enable row level security;
+alter table checkin.eventos       enable row level security;
+alter table checkin.imagens       enable row level security;
+alter table checkin.listas        enable row level security;
+alter table checkin.pessoas       enable row level security;
+alter table checkin.checkins      enable row level security;
+alter table checkin.avulsos       enable row level security;
+alter table checkin.tentativas    enable row level security;
+alter table checkin.qr_registros  enable row level security;
+alter table checkin.bloqueios_geo enable row level security;
 revoke all on all tables    in schema checkin from anon, authenticated;
 revoke all on all sequences in schema checkin from anon, authenticated;
 grant usage on schema checkin to anon, authenticated;
@@ -637,6 +659,7 @@ begin
   perform checkin.exigir_admin();
   delete from checkin.checkins where evento_id = p_id;
   delete from checkin.avulsos where evento_id = p_id;
+  delete from checkin.bloqueios_geo where evento_id = p_id;
   perform checkin.mudou_presencas(p_id);
 end $$;
 
@@ -658,6 +681,7 @@ begin
   delete from checkin.avulsos where evento_id = p_id;
   delete from checkin.tentativas where evento_id = p_id;
   delete from checkin.qr_registros where evento_id = p_id;
+  delete from checkin.bloqueios_geo where evento_id = p_id;
   update checkin.listas set arquivo = '', atualizado = null where evento_id = p_id;
   perform checkin.mudou_listas(p_id);
   perform checkin.mudou_presencas(p_id);
@@ -1034,7 +1058,17 @@ create or replace function checkin.convidado_checkin(p_slug text, p_passe text, 
                                                      p_lat double precision default null, p_lng double precision default null,
                                                      p_precisao double precision default null)
 returns jsonb language plpgsql volatile security definer set search_path = '' as $$
-declare ev checkin.eventos; v bigint; v_ip text; reg bigint; r jsonb; campos jsonb;
+declare
+  ev checkin.eventos;
+  v bigint;
+  v_ip text;
+  reg bigint;
+  r jsonb;
+  campos jsonb;
+  v_dist double precision;
+  v_cpf text;
+  v_tel text;
+  v_email text;
 begin
   select * into ev from checkin.eventos where slug = lower(btrim(coalesce(p_slug, '')));
   if not found then return jsonb_build_object('erro', 'evento'); end if;
@@ -1051,14 +1085,33 @@ begin
     return jsonb_build_object('erro', 'muitas');
   end if;
   insert into checkin.qr_registros (evento_id, ip) values (ev.id, v_ip) returning id into reg;
+
   -- localização: conta feita aqui (o celular nunca recebe as coordenadas do evento)
   if ev.geo_ativo then
-    if p_lat is null or p_lng is null then return jsonb_build_object('erro', 'sem_local'); end if;
-    if coalesce(p_precisao, 99999) > 1000 then return jsonb_build_object('erro', 'local_impreciso'); end if;
-    if checkin.distancia(p_lat, p_lng, ev.geo_lat, ev.geo_lng) > ev.geo_raio + least(p_precisao, 100) then
+    v_cpf := btrim(coalesce(p_dados->>'cpf', ''));
+    v_tel := btrim(coalesce(p_dados->>'telefone', ''));
+    v_email := btrim(coalesce(p_dados->>'email', ''));
+
+    if p_lat is null or p_lng is null then
+      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, raio_permitido, ip)
+      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'sem_local', ev.geo_raio, v_ip);
+      return jsonb_build_object('erro', 'sem_local');
+    end if;
+
+    if coalesce(p_precisao, 99999) > 1000 then
+      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, raio_permitido, lat, lng, precisao, ip)
+      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'local_impreciso', ev.geo_raio, p_lat, p_lng, p_precisao, v_ip);
+      return jsonb_build_object('erro', 'local_impreciso');
+    end if;
+
+    v_dist := checkin.distancia(p_lat, p_lng, ev.geo_lat, ev.geo_lng);
+    if v_dist > ev.geo_raio + least(p_precisao, 100) then
+      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, distancia_metros, raio_permitido, lat, lng, precisao, ip)
+      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'longe', round(v_dist::numeric, 1), ev.geo_raio, p_lat, p_lng, p_precisao, v_ip);
       return jsonb_build_object('erro', 'longe');
     end if;
   end if;
+
   -- no celular o CPF é sempre obrigatório (é o que impede cadastro repetido)
   campos := (select coalesce(jsonb_agg(case when c->>'chave' = 'cpf' then c || '{"obrigatorio": true}'::jsonb else c end), '[]'::jsonb)
                from jsonb_array_elements(ev.campos) c);
@@ -1077,6 +1130,65 @@ begin
     end if;
   end if;
   return r;
+end $$;
+
+-- Consulta de bloqueios para a organização (requer login de admin)
+create or replace function checkin.obter_bloqueios_geo(p_id uuid)
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+begin
+  perform checkin.exigir_admin();
+  return coalesce((
+    select jsonb_agg(jsonb_build_object(
+      'id', b.id,
+      'nome', b.nome,
+      'empresa', b.empresa,
+      'cpf', b.cpf,
+      'telefone', b.telefone,
+      'email', b.email,
+      'dados', b.dados,
+      'motivo', b.motivo,
+      'distancia_metros', b.distancia_metros,
+      'raio_permitido', b.raio_permitido,
+      'lat', b.lat,
+      'lng', b.lng,
+      'precisao', b.precisao,
+      'em', b.em
+    ) order by b.em desc)
+    from checkin.bloqueios_geo b
+    where b.evento_id = p_id
+  ), '[]'::jsonb);
+end $$;
+
+-- Consulta de bloqueios para o painel em tempo real da equipe (usa slug + código)
+create or replace function checkin.bloqueios_geo_painel(p_slug text, p_codigo text)
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+declare
+  a jsonb;
+  v_id uuid;
+begin
+  a := checkin.acesso(p_slug, p_codigo);
+  if a ? 'erro' then return a; end if;
+  v_id := (a->>'id')::uuid;
+  return coalesce((
+    select jsonb_agg(jsonb_build_object(
+      'id', b.id,
+      'nome', b.nome,
+      'empresa', b.empresa,
+      'cpf', b.cpf,
+      'telefone', b.telefone,
+      'email', b.email,
+      'dados', b.dados,
+      'motivo', b.motivo,
+      'distancia_metros', b.distancia_metros,
+      'raio_permitido', b.raio_permitido,
+      'lat', b.lat,
+      'lng', b.lng,
+      'precisao', b.precisao,
+      'em', b.em
+    ) order by b.em desc)
+    from checkin.bloqueios_geo b
+    where b.evento_id = v_id
+  ), '[]'::jsonb);
 end $$;
 
 -- =====================================================================
@@ -1312,6 +1424,7 @@ grant execute on function checkin.adicionar_pessoa(uuid, jsonb)              to 
 grant execute on function checkin.editar_pessoa(uuid, jsonb)                 to authenticated;
 grant execute on function checkin.remover_pessoa(uuid)                       to authenticated;
 grant execute on function checkin.novo_qr_convidados(uuid)                   to authenticated;
+grant execute on function checkin.obter_bloqueios_geo(uuid)                   to authenticated;
 
 -- tablets e painel (link + código)
 grant execute on function checkin.evento_publico(text)                       to anon, authenticated;
@@ -1324,6 +1437,7 @@ grant execute on function checkin.remover_avulso(text, text, uuid)           to 
 grant execute on function checkin.qr_atual(text, text)                       to anon, authenticated;
 grant execute on function checkin.convidado_abrir(text, text, uuid)          to anon, authenticated;
 grant execute on function checkin.convidado_checkin(text, text, text, text, jsonb, double precision, double precision, double precision) to anon, authenticated;
+grant execute on function checkin.bloqueios_geo_painel(text, text)           to anon, authenticated;
 grant execute on function checkin.obter_presentes_certificado(uuid) to authenticated;
 grant execute on function checkin.obter_certificado(text, text, uuid) to anon, authenticated;
 grant execute on function checkin.validar_certificado(text) to anon, authenticated;

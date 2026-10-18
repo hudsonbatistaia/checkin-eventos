@@ -4,7 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Check-in de Eventos</title>
+<title>Check-in de Eventos — IEL Amazonas</title>
+<meta name="description" content="Plataforma de credenciamento, totens inteligentes e emissão de certificados do IEL Amazonas.">
+<!-- Open Graph / WhatsApp / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://checkin.hbone.com.br/">
+<meta property="og:site_name" content="Check-in de Eventos · IEL Amazonas">
+<meta property="og:title" content="Check-in de Eventos — IEL Amazonas">
+<meta property="og:description" content="Plataforma de credenciamento, totens inteligentes e emissão de certificados do IEL Amazonas.">
+<meta property="og:image" content="https://checkin.hbone.com.br/img/preview-compartilhamento.jpg">
+<meta property="og:image:secure_url" content="https://checkin.hbone.com.br/img/preview-compartilhamento.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="720">
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Check-in de Eventos — IEL Amazonas">
+<meta name="twitter:description" content="Plataforma de credenciamento, totens inteligentes e emissão de certificados do IEL Amazonas.">
+<meta name="twitter:image" content="https://checkin.hbone.com.br/img/preview-compartilhamento.jpg">
 <meta name="theme-color" content="#0b1f33">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b1f33'/%3E%3Cpath d='m28 52 15 15 30-32' fill='none' stroke='%232fd3dc' stroke-width='11' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script>
@@ -13,7 +30,7 @@
     if (t) document.documentElement.setAttribute('data-theme', t);
   })();
 </script>
-<link rel="stylesheet" href="/css/admin.css?v=202610181303">
+<link rel="stylesheet" href="/css/admin.css?v=202610181349">
 </head>
 <body class="bloqueado">
 
@@ -418,6 +435,48 @@
         </div>
       </div>
     </div>
+    
+    <!-- Tentativas Bloqueadas por Localização -->
+    <div class="cartao bloqueios-card" id="cardBloqueios">
+      <div class="bloqueios-cabecalho">
+        <div class="bloqueios-titulo-area">
+          <div class="bloqueios-tag-alerta">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            AUDITORIA DE LOCALIZAÇÃO
+          </div>
+          <h2>Tentativas Bloqueadas por GPS <span class="badge-alerta" id="bloqueiosBadge">0</span></h2>
+          <p class="suave">Pessoas que tentaram confirmar presença pelo link/QR do celular mas foram barradas por estarem fora do raio permitido ou sem sinal de GPS.</p>
+        </div>
+        <button class="botao pequeno" type="button" id="btnRecarregarBloqueios">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Atualizar lista
+        </button>
+      </div>
+
+      <div class="bloqueios-vazio" id="bloqueiosVazio">
+        <div class="bloqueios-vazio-icone">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <p><b>Nenhuma tentativa bloqueada no momento.</b></p>
+        <span class="dica">Quando alguém tentar marcar presença de fora do local, o registro completo aparecerá aqui automaticamente.</span>
+      </div>
+
+      <div class="bloqueios-tabela-wrapper" id="bloqueiosTabelaWrapper" hidden>
+        <table class="tabela bloqueios-tabela">
+          <thead>
+            <tr>
+              <th>Horário</th>
+              <th>Nome e Empresa</th>
+              <th>Documento / Contato</th>
+              <th>Motivo do Bloqueio</th>
+              <th>Distância do Local</th>
+              <th>Localização</th>
+            </tr>
+          </thead>
+          <tbody id="bloqueiosLista"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <!-- Operação -->
@@ -604,14 +663,14 @@
 
 <script src="/vendor/supabase.min.js"></script>
 <script src="/vendor/qrcode.js"></script>
-<script src="/js/config.js?v=202610181303"></script>
-<script src="/js/comum.js?v=202610181303"></script>
-<script src="/js/presenca.js?v=202610181303"></script>
-<script src="/js/relatorio.js?v=202610181303"></script>
-<script src="/js/imagens.js?v=202610181303"></script>
-<script src="/js/acesso.js?v=202610181303"></script>
-<script src="/js/lista.js?v=202610181303"></script>
-<script src="/js/admin-listas.js?v=202610181303"></script>
-<script src="/js/admin.js?v=202610181303"></script>
+<script src="/js/config.js?v=202610181349"></script>
+<script src="/js/comum.js?v=202610181349"></script>
+<script src="/js/presenca.js?v=202610181349"></script>
+<script src="/js/relatorio.js?v=202610181349"></script>
+<script src="/js/imagens.js?v=202610181349"></script>
+<script src="/js/acesso.js?v=202610181349"></script>
+<script src="/js/lista.js?v=202610181349"></script>
+<script src="/js/admin-listas.js?v=202610181349"></script>
+<script src="/js/admin.js?v=202610181349"></script>
 </body>
 </html>

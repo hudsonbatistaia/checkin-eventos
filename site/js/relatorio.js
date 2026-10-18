@@ -214,6 +214,25 @@
           empresas.map((e) => ({ valores: [e.nome, e.conf, e.confIn, e.conf - e.confIn, e.conf ? { pct: e.confIn / e.conf } : "—", e.presentes] })),
           [50, 13, 13, 13, 15, 24]), "Por empresa");
 
+    if (extra && extra.bloqueios && extra.bloqueios.length) {
+      juntar(aba("Bloqueios por GPS", `${extra.bloqueios.length} tentativas barradas · ${geradoEm}`,
+        ["Nº", "Nome", "Empresa", "CPF", "Telefone", "E-mail", "Motivo", "Distância", "Data e Horário"],
+        extra.bloqueios.map((b, i) => ({
+          valores: [
+            i + 1,
+            b.nome || "Não informado",
+            b.empresa || "",
+            b.cpf ? C.mascaraCpf(b.cpf) : "",
+            b.telefone ? C.mascaraTelefone(b.telefone) : "",
+            b.email || "",
+            b.motivo === "longe" ? "Fora do raio" : (b.motivo === "sem_local" ? "Sem GPS / Negou" : "Sinal impreciso"),
+            b.distancia_metros != null ? `${(b.distancia_metros / 1000).toFixed(1)} km` : "—",
+            b.em ? new Date(b.em).toLocaleString("pt-BR") : ""
+          ]
+        })),
+        [6, 32, 28, 16, 16, 26, 18, 14, 20]), "Bloqueios GPS");
+    }
+
     const p2 = (x) => String(x).padStart(2, "0");
     const nomeArq = `Relatorio-presenca-${C.slug(evento.nome) || "evento"}-${agora.getFullYear()}-${p2(agora.getMonth() + 1)}-${p2(agora.getDate())}-${p2(agora.getHours())}h${p2(agora.getMinutes())}.xlsx`;
     X.writeFile(wb, nomeArq, { compression: true });
