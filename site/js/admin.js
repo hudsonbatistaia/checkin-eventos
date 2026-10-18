@@ -61,7 +61,12 @@
     catch { toast("Não foi possível copiar. Selecione e copie manualmente.", true); }
   }
   const linkEvento = (ev, tela, comCodigo) => `${location.origin}/e/${ev.slug}${comCodigo ? "?c=" + ev.codigo : ""}${tela ? "#" + tela : ""}`;
-  const fundoTema = (tema) => { const t = { ...C.TEMA_PADRAO, ...(tema || {}) }; return `linear-gradient(118deg, ${t.fundo1}, ${t.fundo2})`; };
+  const fundoTema = (tema) => {
+    const t = { ...C.TEMA_PADRAO, ...(tema || {}) };
+    const f1 = (t.fundo1 && t.fundo1 !== "#000000" && t.fundo1 !== "#111111") ? t.fundo1 : "#002B49";
+    const f2 = (t.fundo2 && t.fundo2 !== "#000000" && t.fundo2 !== "#111111" && t.fundo2 !== f1) ? t.fundo2 : "#0E8A94";
+    return `linear-gradient(135deg, ${f1} 0%, ${f2} 100%)`;
+  };
 
   /* ================= Navegação ================= */
   let evento = null;            // evento aberto (obter_evento)
@@ -853,7 +858,7 @@
       evento: (evento && evento.nome) || "Nome do Evento",
       data: (evento && evento.data) || null,
       horas: $("certHoras").value || 4,
-      emissor: $("certEmissor").value.trim() || "SISTEMA FIEAM / IEL",
+      emissor: $("certEmissor").value.trim() || "INSTITUTO EUVALDO LODI — IEL AMAZONAS",
       texto: $("certTexto").value.trim(),
       assinatura_nome: $("certAssinaturaNome").value.trim() || "Hudson Batista",
       assinatura_cargo: $("certAssinaturaCargo").value.trim() || "Coordenação de Eventos",
@@ -1010,7 +1015,7 @@
         evento: evento.nome,
         data: evento.data,
         horas: evento.certificado_horas || $("certHoras").value || 0,
-        emissor: evento.certificado_emissor || $("certEmissor").value.trim() || "SISTEMA FIEAM / IEL",
+        emissor: evento.certificado_emissor || $("certEmissor").value.trim() || "INSTITUTO EUVALDO LODI — IEL AMAZONAS",
         texto: evento.certificado_texto || $("certTexto").value.trim(),
         assinatura_nome: evento.certificado_assinatura_nome || $("certAssinaturaNome").value.trim(),
         assinatura_cargo: evento.certificado_assinatura_cargo || $("certAssinaturaCargo").value.trim(),

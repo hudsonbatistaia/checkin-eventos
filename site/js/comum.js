@@ -70,8 +70,8 @@
   const sobre = (c) => (contraste(c, BRANCO) >= contraste(c, [16, 24, 32]) ? "#FFFFFF" : "#101820");
   const rgba = (c, a) => `rgba(${c.map(Math.round).join(", ")}, ${a})`;
 
-  // Tema padrão (usado quando o evento ainda não tem cores).
-  const TEMA_PADRAO = { fundo1: "#1C5D99", fundo2: "#0B2545", destaque: "#46E6CB", destaque2: "#F6B04C" };
+  // Tema padrão oficial (IEL Amazonas / Sistema FIEAM).
+  const TEMA_PADRAO = { fundo1: "#002B49", fundo2: "#0E8A94", destaque: "#2FD3DC", destaque2: "#F6B04C" };
 
   // Converte as 4 cores do evento em todas as variáveis de CSS da recepção e do painel.
   function variaveisTema(tema) {

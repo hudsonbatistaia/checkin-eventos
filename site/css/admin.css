@@ -242,7 +242,22 @@ button, input, select { font: inherit; }
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
 .evento:hover { border-color: var(--destaque); transform: translateY(-3px); box-shadow: 0 12px 30px -8px rgba(11, 31, 51, 0.16); }
-.evento-capa { position: relative; height: 96px; padding: 14px 16px; display: flex; align-items: flex-end; color: #FFF; }
+.evento-capa {
+  position: relative;
+  height: 100px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-end;
+  color: #FFF;
+  overflow: hidden;
+}
+.evento-capa::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.22), transparent 60%);
+  pointer-events: none;
+}
 .evento-capa .status { position: absolute; top: 12px; right: 12px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 .evento-capa .status.aberto { background: rgba(16, 185, 129, 0.95); color: #FFFFFF; }
 .evento-capa .status.encerrado { background: rgba(220, 38, 38, 0.92); color: #FFFFFF; }
