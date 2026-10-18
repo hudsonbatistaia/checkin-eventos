@@ -971,6 +971,50 @@
   }
   window.Listas.iniciar({ rpc, janela, toast, confirmarDigitando, evento: () => evento, recarregarListas });
 
+  /* ================= Alternador de Tema ================= */
+  function iniciarTema() {
+    const btn = $("btnTema");
+    const sun = $("iconSun");
+    const moon = $("iconMoon");
+    if (!btn) return;
+
+    function eEscuro() {
+      const temaAttr = document.documentElement.getAttribute("data-theme");
+      if (temaAttr === "dark") return true;
+      if (temaAttr === "light") return false;
+      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+
+    function atualizarIcones() {
+      const escuro = eEscuro();
+      if (sun) sun.style.display = escuro ? "block" : "none";
+      if (moon) moon.style.display = escuro ? "none" : "block";
+      btn.setAttribute("title", escuro ? "Mudar para modo claro" : "Mudar para modo escuro");
+      btn.setAttribute("aria-label", escuro ? "Mudar para modo claro" : "Mudar para modo escuro");
+    }
+
+    atualizarIcones();
+
+    btn.addEventListener("click", () => {
+      const novoTema = eEscuro() ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", novoTema);
+      try {
+        localStorage.setItem("checkinTheme", novoTema);
+        localStorage.setItem("jaTheme", novoTema);
+      } catch (e) {}
+      atualizarIcones();
+    });
+
+    if (window.matchMedia) {
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+        const salvo = localStorage.getItem("checkinTheme") || localStorage.getItem("jaTheme");
+        if (!salvo) atualizarIcones();
+      });
+    }
+  }
+
   /* ================= Início ================= */
+  iniciarTema();
   window.Acesso.garantir(sb).then(() => navegar());
 })();
+

@@ -7,11 +7,16 @@
 <title>Check-in de Eventos</title>
 <meta name="theme-color" content="#0b1f33">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b1f33'/%3E%3Cpath d='m28 52 15 15 30-32' fill='none' stroke='%232fd3dc' stroke-width='11' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/css/admin.css?v=202610181255">
+<script>
+  (function() {
+    var t = localStorage.getItem('checkinTheme') || localStorage.getItem('jaTheme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<link rel="stylesheet" href="/css/admin.css?v=202610181303">
 </head>
 <body class="bloqueado">
 
-<!-- ======================= ENTRADA ======================= -->
 <!-- ======================= ENTRADA ======================= -->
 <div class="acesso" id="telaAcesso">
   <form class="acesso-cartao" id="formEntrar" autocomplete="on" hidden>
@@ -57,6 +62,10 @@
   <div class="barra-dir">
     <div class="barra-usuario">
       <span class="usuario-chip"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span id="usuarioNome"></span></span>
+      <button class="btn-tema" id="btnTema" type="button" aria-label="Alternar tema claro/escuro" title="Alternar tema claro/escuro">
+        <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
       <button class="botao link" type="button" id="btnTrocarSenha">Trocar senha</button>
       <button class="botao link" type="button" id="btnSair">Sair</button>
     </div>
@@ -595,14 +604,14 @@
 
 <script src="/vendor/supabase.min.js"></script>
 <script src="/vendor/qrcode.js"></script>
-<script src="/js/config.js?v=202610181255"></script>
-<script src="/js/comum.js?v=202610181255"></script>
-<script src="/js/presenca.js?v=202610181255"></script>
-<script src="/js/relatorio.js?v=202610181255"></script>
-<script src="/js/imagens.js?v=202610181255"></script>
-<script src="/js/acesso.js?v=202610181255"></script>
-<script src="/js/lista.js?v=202610181255"></script>
-<script src="/js/admin-listas.js?v=202610181255"></script>
-<script src="/js/admin.js?v=202610181255"></script>
+<script src="/js/config.js?v=202610181303"></script>
+<script src="/js/comum.js?v=202610181303"></script>
+<script src="/js/presenca.js?v=202610181303"></script>
+<script src="/js/relatorio.js?v=202610181303"></script>
+<script src="/js/imagens.js?v=202610181303"></script>
+<script src="/js/acesso.js?v=202610181303"></script>
+<script src="/js/lista.js?v=202610181303"></script>
+<script src="/js/admin-listas.js?v=202610181303"></script>
+<script src="/js/admin.js?v=202610181303"></script>
 </body>
 </html>
