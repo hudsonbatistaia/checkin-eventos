@@ -132,9 +132,17 @@
         ? `<span>Dados pessoais apagados</span>`
         : `<span><b>${ev.pessoas}</b> na lista</span><span><b>${ev.presentes}</b> presentes</span>`;
       return `<li class="evento">
-        <div class="evento-capa" style="background:${fundoTema(ev.tema)}">
-          ${status}
-          <span class="data">${esc(C.dataExtenso(ev.data) || "Sem data definida")}</span>
+        <div class="evento-capa" id="capa-${ev.id}" style="background:${fundoTema(ev.tema)}">
+          <div class="evento-capa-topo">
+            <div class="evento-capa-logo-wrap" title="Identificação do evento">
+              <img class="evento-capa-logo" id="logo-card-${ev.id}" src="/img/logo-iel.png" alt="Logo">
+            </div>
+            ${status}
+          </div>
+          <div class="evento-capa-base">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="opacity:.9; flex:none;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span class="data">${esc(C.dataExtenso(ev.data) || "Sem data definida")}</span>
+          </div>
         </div>
         <div class="evento-corpo">
           <h2><a href="#/evento/${ev.id}">${esc(ev.nome)}</a></h2>
@@ -146,6 +154,25 @@
           </div>
         </div></li>`;
     }).join("");
+
+    // Carrega arte/logo do evento assincronamente para enriquecer a capa
+    lista.forEach(async (ev) => {
+      try {
+        if (ev.tem_arte) {
+          const arteUrl = await rpc("imagem", { p_slug: ev.slug, p_tipo: "arte" });
+          const capa = $("capa-" + ev.id);
+          if (capa && arteUrl) {
+            capa.style.backgroundImage = `url("${arteUrl}")`;
+            capa.classList.add("tem-arte-fundo");
+          }
+        }
+        const logoUrl = await rpc("imagem", { p_slug: ev.slug, p_tipo: "logo" });
+        const img = $("logo-card-" + ev.id);
+        if (img && logoUrl) {
+          img.src = logoUrl;
+        }
+      } catch {}
+    });
   }
   $("btnNovo").addEventListener("click", async () => {
     const novo = await janela({
