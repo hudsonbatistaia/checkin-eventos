@@ -98,9 +98,19 @@ window.Acesso = (function () {
         setTimeout(() => tela("livre"), 900);
       });
 
+      // Em vez de voltar ao portal em silêncio, mostra o motivo (para quem vem do portal com login).
+      function falhaDeEntrada(motivo) {
+        tela("carregando");
+        const el = $("msgCarregando");
+        el.classList.remove("ok");
+        el.innerHTML = "";
+        el.append("Não foi possível entrar no Check-in: " + motivo);
+        el.insertAdjacentHTML("beforeend", '<br><br><a href="https://portal.hbone.com.br">Voltar ao Portal</a> (recarregue o portal com F5 e tente de novo).');
+      }
+
       (async function iniciar() {
         tela("carregando");
-        let s = null;
+        let s = null, motivo = "";
         try { s = (await cliente.auth.getSession()).data.session; } catch { /* sem sessão */ }
 
         // 1. Tenta hash da URL vindo do Portal Geral (#access_token=...)
@@ -110,14 +120,13 @@ window.Acesso = (function () {
             const params = new URLSearchParams(hashStr);
             const at = params.get("access_token");
             const rt = params.get("refresh_token") || "";
+            history.replaceState(null, "", window.location.pathname + window.location.search);   // tira o login do endereço
             if (at) {
               const ret = await cliente.auth.setSession({ access_token: at, refresh_token: rt });
-              if (ret && ret.data && ret.data.session) {
-                s = ret.data.session;
-                history.replaceState(null, "", window.location.pathname + window.location.search);
-              }
+              if (ret && ret.data && ret.data.session) s = ret.data.session;
+              else motivo = "o login enviado pelo Portal não foi aceito (" + ((ret && ret.error && ret.error.message) || "sessão inválida") + ").";
             }
-          } catch (e) {}
+          } catch (e) { motivo = "o login enviado pelo Portal não foi aceito (" + ((e && e.message) || e) + ")."; }
         }
 
         // 2. Tenta cookie compartilhado sb_auth_token (.hbone.com.br)
@@ -127,17 +136,25 @@ window.Acesso = (function () {
             try {
               const token = decodeURIComponent(m[1]);
               const ret = await cliente.auth.setSession({ access_token: token, refresh_token: "" });
-              if (ret && ret.data && ret.data.session) s = ret.data.session;
-            } catch (e) {}
+              if (ret && ret.data && ret.data.session) { s = ret.data.session; motivo = ""; }
+            } catch (e) { /* o cookie não tem renovação; fica o motivo do item 1, se houver */ }
           }
         }
 
         if (s) {
-          try { liberar(await confirmarAcesso()); return; } catch { await cliente.auth.signOut(); }
+          try { liberar(await confirmarAcesso()); return; }
+          catch (e) {
+            const email = (s.user && s.user.email) || "este usuário";
+            motivo = /sem permissão/i.test((e && e.message) || "")
+              ? `o usuário ${email} não tem acesso ao Check-in de Eventos. Peça a liberação no painel de usuários do Portal.`
+              : `${traduzir(e)} (usuário ${email}).`;
+            await cliente.auth.signOut();
+          }
         }
 
         // No ar (hbone.com.br), o acesso é OBRIGATÓRIO pelo Portal Geral
         if (window.location.hostname.endsWith("hbone.com.br")) {
+          if (motivo) { falhaDeEntrada(motivo); return; }
           window.location.href = "https://portal.hbone.com.br";
           return;
         }

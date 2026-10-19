@@ -119,6 +119,9 @@ Achadas ao atualizar esta documentação (contrariavam as decisões de 16/10: da
 4. `03-bloqueios-geo.sql` liberava `obter_bloqueios_geo` para `anon`; alinhado com o `01` (só `authenticated`).
 Testes: 14 novos no `testar-sql.mjs` (2 antigos ajustados: "Ana" → "Ana Sou"; "Bruno" → "Bruno Lima") e `testar-privacidade.mjs` (16, no navegador: painel sem CPF/mapa, respostas do servidor sem CPF, busca por nome pedindo CPF completo).
 
+## Pendências
+- **Tornar o repositório `checkin-eventos` privado** (pedido do Hudson em 19/10/2026, "guarde para depois"). Hoje é público. Fazer como no Viabilidade: deploy key de leitura em /root/.ssh (deploy_checkin), Host github-checkin em /root/.ssh/config, trocar o remote de /var/www/checkin para SSH, e só então mudar para privado no GitHub.
+
 ## Sugestões de mercado para o futuro (Roadmap)
 1. **Impressão instantânea de crachás / etiquetas:** ao confirmar no tablet, imprimir etiqueta em impressora térmica sem fio.
 2. **Leitor de QR Code no crachá ou convite:** ler o QR individual do participante pela câmera do tablet.
