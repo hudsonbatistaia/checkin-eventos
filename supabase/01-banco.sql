@@ -1078,9 +1078,11 @@ begin
   -- passe: dentro da validade e assinado com a chave atual
   begin v := split_part(coalesce(p_passe, ''), '.', 1)::bigint; exception when others then v := 0; end;
   if v < extract(epoch from now()) or coalesce(p_passe, '') <> checkin.passe_de(ev, v) then return jsonb_build_object('erro', 'passe'); end if;
-  -- limite por celular/rede: 3 check-ins (ou 15 tentativas) a cada 10 minutos
+  -- limite por rede: 60 check-ins (ou 150 tentativas) a cada 10 minutos.
+  -- Alto de propósito: no Wi-Fi do evento (e em muitas operadoras) vários celulares
+  -- saem pelo mesmo IP. A proteção principal é o CPF único, o QR e a localização.
   v_ip := checkin.ip();
-  if (select count(*) filter (where ok) >= 3 or count(*) >= 15 from checkin.qr_registros
+  if (select count(*) filter (where ok) >= 60 or count(*) >= 150 from checkin.qr_registros
        where evento_id = ev.id and ip = v_ip and em > now() - interval '10 minutes') then
     return jsonb_build_object('erro', 'muitas');
   end if;

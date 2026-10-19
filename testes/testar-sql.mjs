@@ -230,13 +230,14 @@ ok(r.data.erro === 'passe', 'passe adulterado: recusado');
 const vencido = (await q(`select checkin.passe_de(e, extract(epoch from now())::bigint - 60) p from checkin.eventos e where id='${QE.id}'`))[0].p;
 r = await viaQr(vencido, '11144477735', '10.5.0.3');
 ok(r.data.erro === 'passe', 'passe vencido (mais de 20 min): recusado');
-// limite por celular/rede
+// limite por rede (Wi-Fi do evento): 60 check-ins a cada 10 min
 const cpfs = ['11144477735', '39053344705', '71428793860', '87748248800'];
 for (const c of cpfs.slice(0, 2)) await viaQr(PASSE, c, '10.5.0.9');
 r = await viaQr(PASSE, cpfs[2], '10.5.0.9');
-ok(r.data.ok, '3º check-in da mesma rede: ainda passa');
+ok(r.data.ok, '3º check-in da mesma rede: passa (Wi-Fi do evento)');
+await q(`insert into checkin.qr_registros (evento_id, ip, ok) select '${QE.id}', '10.5.0.9', true from generate_series(1, 57)`);
 r = await viaQr(PASSE, cpfs[3], '10.5.0.9');
-ok(r.data.erro === 'muitas', '4º check-in da mesma rede em 10 min: "muitas tentativas"');
+ok(r.data.erro === 'muitas', '61º check-in da mesma rede em 10 min: "muitas tentativas"');
 r = await viaQr(PASSE, cpfs[3], '10.5.0.10');
 ok(r.data.ok, '...outra rede continua normal');
 // abertura marcada
