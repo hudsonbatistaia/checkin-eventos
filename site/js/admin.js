@@ -721,11 +721,6 @@
 
         const raioStr = b.raio_permitido ? ` (raio: ${b.raio_permitido >= 1000 ? (b.raio_permitido / 1000) + ' km' : b.raio_permitido + ' m'})` : "";
 
-        let linkMapa = "—";
-        if (b.lat != null && b.lng != null) {
-          linkMapa = `<a href="https://www.google.com/maps?q=${b.lat},${b.lng}" target="_blank" rel="noopener" class="btn-mapa" title="Abrir no Google Maps"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Ver no mapa</a>`;
-        }
-
         const contatos = [];
         if (b.cpf) contatos.push(`CPF: ${esc(b.cpf)}`);
         if (b.telefone) contatos.push(`Tel: ${esc(b.telefone)}`);
@@ -737,7 +732,6 @@
           <td><span class="dica">${contatos.join(" · ") || "—"}</span></td>
           <td>${motivoHtml}</td>
           <td><b>${distStr}</b><br><span class="dica">${raioStr}</span></td>
-          <td>${linkMapa}</td>
         </tr>`;
       }).join("");
 

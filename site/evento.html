@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/css/evento.css?v=202610181600">
+<link rel="stylesheet" href="/css/evento.css?v=202610191430">
 </head>
 <body data-view="carregando">
 
@@ -229,9 +229,9 @@
     <!-- Confirmação de segurança quando busca por nome -->
     <div id="certSeguranca" hidden style="margin-top:16px; background:var(--superficie-2); padding:16px; border-radius:14px; text-align:left;">
       <p style="margin:0 0 6px; font-weight:700; color:var(--tinta); font-size:15px;">🔒 Confirmação de segurança</p>
-      <p class="suave" style="margin:0 0 10px; font-size:13px;" id="certSegurancaMsg">Para garantir sua privacidade, confirme os <b>3 primeiros dígitos</b> do seu CPF cadastrado:</p>
+      <p class="suave" style="margin:0 0 10px; font-size:13px;" id="certSegurancaMsg">Para proteger seus dados, informe o <b>CPF completo</b> usado no check-in:</p>
       <div style="display:flex; gap:8px;">
-        <input id="campoConfirmaDigitos" type="text" maxlength="3" placeholder="Ex.: 123" inputmode="numeric" style="width:110px; text-align:center; padding:10px 14px; border-radius:10px; border:1px solid var(--linha); font-size:18px; font-weight:700; letter-spacing:2px; background:var(--superficie); color:var(--tinta);">
+        <input id="campoConfirmaDigitos" type="text" maxlength="14" placeholder="000.000.000-00" inputmode="numeric" aria-label="CPF completo" style="width:190px; text-align:center; padding:10px 14px; border-radius:10px; border:1px solid var(--linha); font-size:18px; font-weight:700; letter-spacing:2px; background:var(--superficie); color:var(--tinta);">
         <button class="btn primary" type="button" id="btnConfirmarSeguranca" style="flex:1;">Liberar certificado</button>
       </div>
       <p class="errmsg" id="certSegurancaErro" hidden style="margin-top:8px;"></p>
@@ -290,11 +290,11 @@
 
 <script src="/vendor/supabase.min.js"></script>
 <script src="/vendor/qrcode.js"></script>
-<script src="/js/config.js?v=202610181600"></script>
-<script src="/js/comum.js?v=202610181600"></script>
-<script src="/js/formulario.js?v=202610181600"></script>
-<script src="/js/presenca.js?v=202610181600"></script>
-<script src="/js/relatorio.js?v=202610181600"></script>
-<script src="/js/evento.js?v=202610181600"></script>
+<script src="/js/config.js?v=202610191430"></script>
+<script src="/js/comum.js?v=202610191430"></script>
+<script src="/js/formulario.js?v=202610191430"></script>
+<script src="/js/presenca.js?v=202610191430"></script>
+<script src="/js/relatorio.js?v=202610191430"></script>
+<script src="/js/evento.js?v=202610191430"></script>
 </body>
 </html>

@@ -1099,15 +1099,15 @@ begin
     end if;
 
     if coalesce(p_precisao, 99999) > 1000 then
-      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, raio_permitido, lat, lng, precisao, ip)
-      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'local_impreciso', ev.geo_raio, p_lat, p_lng, p_precisao, v_ip);
+      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, raio_permitido, ip)
+      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'local_impreciso', ev.geo_raio, v_ip);
       return jsonb_build_object('erro', 'local_impreciso');
     end if;
 
     v_dist := checkin.distancia(p_lat, p_lng, ev.geo_lat, ev.geo_lng);
     if v_dist > ev.geo_raio + least(p_precisao, 100) then
-      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, distancia_metros, raio_permitido, lat, lng, precisao, ip)
-      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'longe', round(v_dist::numeric, 1), ev.geo_raio, p_lat, p_lng, p_precisao, v_ip);
+      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, distancia_metros, raio_permitido, ip)
+      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'longe', round(v_dist::numeric, 1), ev.geo_raio, v_ip);
       return jsonb_build_object('erro', 'longe');
     end if;
   end if;
@@ -1149,9 +1149,6 @@ begin
       'motivo', b.motivo,
       'distancia_metros', b.distancia_metros,
       'raio_permitido', b.raio_permitido,
-      'lat', b.lat,
-      'lng', b.lng,
-      'precisao', b.precisao,
       'em', b.em
     ) order by b.em desc)
     from checkin.bloqueios_geo b
@@ -1174,16 +1171,9 @@ begin
       'id', b.id,
       'nome', b.nome,
       'empresa', b.empresa,
-      'cpf', b.cpf,
-      'telefone', b.telefone,
-      'email', b.email,
-      'dados', b.dados,
       'motivo', b.motivo,
       'distancia_metros', b.distancia_metros,
       'raio_permitido', b.raio_permitido,
-      'lat', b.lat,
-      'lng', b.lng,
-      'precisao', b.precisao,
       'em', b.em
     ) order by b.em desc)
     from checkin.bloqueios_geo b
@@ -1219,6 +1209,7 @@ declare
   v_sem_presenca text;
   v_opcoes jsonb;
   v_contagem integer;
+  v_prova boolean := false;   -- achou pelo id (celular), pelo código CERT ou pelo CPF completo
 begin
   select * into ev from checkin.eventos where slug = lower(btrim(coalesce(p_slug, '')));
   if not found then return jsonb_build_object('erro', 'evento'); end if;
@@ -1239,6 +1230,7 @@ begin
         join checkin.checkins c on c.evento_id = ev.id and c.grupo = p.grupo
        where p.id = p_id and p.evento_id = ev.id limit 1;
     end if;
+    v_prova := v_id is not null;
   elsif length(v_chave_limpa) > 0 then
     -- 1. Cdigo do certificado (CERT-...)
     if upper(v_chave_limpa) like 'CERT-%' then
@@ -1247,6 +1239,7 @@ begin
         from checkin.certificados
        where evento_id = ev.id and upper(codigo) = upper(v_chave_limpa)
        limit 1;
+      v_prova := v_id is not null;
     end if;
 
     -- 2. CPF com 11 dgitos
@@ -1256,6 +1249,7 @@ begin
         from checkin.avulsos a
        where a.evento_id = ev.id and a.cpf = regexp_replace(v_chave_limpa, '\D', '', 'g')
        limit 1;
+      v_prova := v_id is not null;
     end if;
 
     -- 3. Nome exato (comparao normalizada sem acentos)
@@ -1277,7 +1271,7 @@ begin
     end if;
 
     -- 4. Nome parcial (contm) entre quem teve presena confirmada
-    if v_id is null and length(checkin.norm(v_chave_limpa)) >= 2 then
+    if v_id is null and length(checkin.norm(v_chave_limpa)) >= 4 then
       select coalesce(jsonb_agg(jsonb_build_object('id', q.id, 'nome', q.nome, 'empresa', q.empresa, 'cpf', q.cpf, 'horario', q.horario, 'tipo', q.tipo)), '[]'::jsonb),
              count(*)
         into v_opcoes, v_contagem
@@ -1299,8 +1293,13 @@ begin
         v_cpf := coalesce(v_opcoes->0->>'cpf', '');
         v_tipo := v_opcoes->0->>'tipo';
         v_horario := (v_opcoes->0->>'horario')::timestamptz;
+      elsif v_contagem > 6 then
+        return jsonb_build_object('erro', 'muitos');
       elsif v_contagem > 1 then
-        return jsonb_build_object('ok', true, 'multiplos', true, 'opcoes', v_opcoes);
+        -- Nunca devolve CPF nem id: a pessoa escolhe o nome e prova com o CPF (quando houver).
+        return jsonb_build_object('ok', true, 'multiplos', true, 'opcoes',
+          (select jsonb_agg(jsonb_build_object('nome', o->>'nome', 'empresa', o->>'empresa', 'pede_cpf', length(coalesce(o->>'cpf', '')) = 11))
+             from jsonb_array_elements(v_opcoes) o));
       end if;
     end if;
 
@@ -1308,8 +1307,7 @@ begin
     if v_id is null then
       select p.nome into v_sem_presenca
         from checkin.pessoas p
-       where p.evento_id = ev.id
-         and (checkin.norm(p.nome) = checkin.norm(v_chave_limpa) or checkin.norm(p.nome) like '%' || checkin.norm(v_chave_limpa) || '%')
+       where p.evento_id = ev.id and checkin.norm(p.nome) = checkin.norm(v_chave_limpa)
        limit 1;
 
       if v_sem_presenca is not null then
@@ -1320,6 +1318,10 @@ begin
 
   if v_id is null then
     return jsonb_build_object('erro', 'nao_encontrado');
+  end if;
+
+  if not v_prova and length(v_cpf) = 11 then
+    return jsonb_build_object('ok', true, 'precisa_cpf', true, 'nome', v_nome);
   end if;
 
   v_codigo := 'CERT-' || upper(substr(ev.slug, 1, 4)) || '-' || upper(substr(md5(v_id::text || ev.id::text), 1, 8));
@@ -1341,9 +1343,7 @@ begin
     'assinatura_nome', ev.certificado_assinatura_nome, 'assinatura_cargo', ev.certificado_assinatura_cargo,
     'assinatura_imagem', ev.certificado_assinatura_imagem,
     'codigo', v_codigo, 'horario_checkin', v_horario, 'tema', ev.tema,
-    'cpf_parcial', case when length(v_cpf) = 11 then substr(v_cpf, 1, 3) || '.***.***-**' else '' end,
-    'precisa_confirmar_cpf', (length(v_cpf) = 11 and not (length(regexp_replace(v_chave_limpa, '\D', '', 'g')) = 11)),
-    'digitos_esperados', substr(v_cpf, 1, 3)
+    'cpf_parcial', case when length(v_cpf) = 11 then substr(v_cpf, 1, 3) || '.***.***-**' else '' end
   );
 end $$;
 

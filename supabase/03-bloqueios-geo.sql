@@ -1,5 +1,7 @@
 -- =====================================================================
 -- MIGRATION: Registro de tentativas bloqueadas por localização (GPS)
+-- (Já incluído no 01-banco.sql. Corrigido em 19/10/2026: não guarda a localização da pessoa
+--  e o painel dos tablets não recebe CPF/contatos. Ver 04-privacidade.sql.)
 -- =====================================================================
 
 create table if not exists checkin.bloqueios_geo (
@@ -72,15 +74,15 @@ begin
     end if;
 
     if coalesce(p_precisao, 99999) > 1000 then
-      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, raio_permitido, lat, lng, precisao, ip)
-      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'local_impreciso', ev.geo_raio, p_lat, p_lng, p_precisao, v_ip);
+      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, raio_permitido, ip)
+      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'local_impreciso', ev.geo_raio, v_ip);
       return jsonb_build_object('erro', 'local_impreciso');
     end if;
 
     v_dist := checkin.distancia(p_lat, p_lng, ev.geo_lat, ev.geo_lng);
     if v_dist > ev.geo_raio + least(p_precisao, 100) then
-      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, distancia_metros, raio_permitido, lat, lng, precisao, ip)
-      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'longe', round(v_dist::numeric, 1), ev.geo_raio, p_lat, p_lng, p_precisao, v_ip);
+      insert into checkin.bloqueios_geo (evento_id, nome, empresa, cpf, telefone, email, dados, motivo, distancia_metros, raio_permitido, ip)
+      values (ev.id, coalesce(p_nome, ''), coalesce(p_empresa, ''), v_cpf, v_tel, v_email, coalesce(p_dados, '{}'::jsonb), 'longe', round(v_dist::numeric, 1), ev.geo_raio, v_ip);
       return jsonb_build_object('erro', 'longe');
     end if;
   end if;
@@ -122,9 +124,6 @@ begin
       'motivo', b.motivo,
       'distancia_metros', b.distancia_metros,
       'raio_permitido', b.raio_permitido,
-      'lat', b.lat,
-      'lng', b.lng,
-      'precisao', b.precisao,
       'em', b.em
     ) order by b.em desc)
     from checkin.bloqueios_geo b
@@ -132,7 +131,7 @@ begin
   ), '[]'::jsonb);
 end $$;
 
-grant execute on function checkin.obter_bloqueios_geo(uuid) to anon, authenticated;
+grant execute on function checkin.obter_bloqueios_geo(uuid) to authenticated;
 
 -- Consulta de bloqueios para o painel em tempo real da equipe (usa slug + código)
 create or replace function checkin.bloqueios_geo_painel(p_slug text, p_codigo text)
@@ -149,16 +148,9 @@ begin
       'id', b.id,
       'nome', b.nome,
       'empresa', b.empresa,
-      'cpf', b.cpf,
-      'telefone', b.telefone,
-      'email', b.email,
-      'dados', b.dados,
       'motivo', b.motivo,
       'distancia_metros', b.distancia_metros,
       'raio_permitido', b.raio_permitido,
-      'lat', b.lat,
-      'lng', b.lng,
-      'precisao', b.precisao,
       'em', b.em
     ) order by b.em desc)
     from checkin.bloqueios_geo b

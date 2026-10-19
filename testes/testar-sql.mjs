@@ -318,12 +318,12 @@ await adm('salvar_evento', { p_id: EV, p_dados: { certificado_libera_em: new Dat
 r = await pub('obter_certificado', { p_slug: SLUG, p_chave: 'Ana Souza' });
 ok(r.data && r.data.ok && r.data.liberado && r.data.codigo && r.data.horas == 8, 'certificado no horário: liberado = true com código (' + (r.data && r.data.codigo) + ')');
 const cod = r.data.codigo;
-r = await pub('obter_certificado', { p_slug: SLUG, p_chave: 'Ana' });
-ok(r.data && r.data.ok && r.data.liberado && r.data.nome === 'Ana Souza', 'busca parcial: "Ana" encontra "Ana Souza"');
+r = await pub('obter_certificado', { p_slug: SLUG, p_chave: 'Ana Sou' });
+ok(r.data && r.data.ok && r.data.liberado && r.data.nome === 'Ana Souza', 'busca parcial (4 letras ou mais): "Ana Sou" encontra "Ana Souza"');
 r = await pub('obter_certificado', { p_slug: SLUG, p_chave: cod });
 ok(r.data && r.data.ok && r.data.liberado && r.data.codigo === cod, 'busca por código: encontra pelo código do certificado');
-r = await pub('obter_certificado', { p_slug: SLUG, p_chave: 'Bruno' });
-ok(r.data && r.data.erro === 'sem_presenca', 'pessoa na lista sem check-in: avisa que não confirmou presença');
+r = await pub('obter_certificado', { p_slug: SLUG, p_chave: 'Bruno Lima' });
+ok(r.data && r.data.erro === 'sem_presenca', 'pessoa na lista sem check-in (nome completo): avisa que não confirmou presença');
 r = await pub('validar_certificado', { p_codigo: cod });
 ok(r.data && r.data.ok && r.data.valido && r.data.nome === 'Ana Souza', 'validar_certificado público: confirma autenticidade');
 r = await pub('validar_certificado', { p_codigo: 'CERT-FALSO-1234' });
@@ -348,3 +348,46 @@ r = await adm('listar_eventos');
 ok(r.data.length === 1 && r.data[0].nome === 'Prêmio Inovação 2028', 'lista de eventos: só a cópia');
 r = await pub('fazer_checkin', { p_slug: SLUG, p_codigo: NOVO, p_grupo: 'ana-souza' });
 ok(r.data.erro === 'evento', 'evento apagado: link deixa de funcionar');
+
+// ---------- privacidade (correções de 19/10/2026) ----------
+const PV = (await adm('criar_evento', { p_dados: { nome: 'Evento Privacidade', aberto: true, campos: [{ chave: 'empresa' }, { chave: 'telefone' }] } })).data;
+await adm('salvar_evento', { p_id: PV.id, p_dados: { geo_ativo: true, geo_lat: -3.1, geo_lng: -60.0, geo_raio: 300, certificado_ativo: true } });
+const pv = (await adm('obter_evento', { p_id: PV.id })).data;
+const passeDe = async (ip) => (await pub('convidado_abrir', { p_slug: PV.slug, p_k: pv.qr_chave, p_id: null }, ip)).data.passe;
+const chegar = async (nome, cpf, ip, lat) => pub('convidado_checkin', { p_slug: PV.slug, p_passe: await passeDe(ip), p_nome: nome, p_empresa: 'Empresa X',
+  p_dados: { cpf, telefone: '92992001234', consentiu: true }, p_lat: lat, p_lng: -60.0, p_precisao: 15 }, ip);
+r = await chegar('Pedro Longe Alves', '39053344705', '10.8.0.1', -3.3);
+ok(r.data.erro === 'longe', 'barrado pela localização (longe)');
+const bl = (await q(`select lat, lng, precisao, distancia_metros, cpf from checkin.bloqueios_geo where evento_id='${PV.id}'`))[0];
+ok(bl && bl.lat === null && bl.lng === null && bl.precisao === null && bl.distancia_metros > 20000, 'bloqueio guarda só motivo e distância, NÃO a localização');
+r = await pub('bloqueios_geo_painel', { p_slug: PV.slug, p_codigo: pv.codigo }, '10.8.0.2');
+ok(r.data.length === 1 && r.data[0].nome === 'Pedro Longe Alves' && !('cpf' in r.data[0]) && !('telefone' in r.data[0]) && !('email' in r.data[0]) && !('lat' in r.data[0]) && !JSON.stringify(r.data).includes('39053344705'),
+  'painel dos tablets vê o bloqueio sem CPF, contatos e localização');
+r = await adm('obter_bloqueios_geo', { p_id: PV.id });
+ok(r.data[0].cpf === '39053344705' && !('lat' in r.data[0]), 'organização (login) vê o CPF, mas não a localização');
+r = await pub('obter_bloqueios_geo', { p_id: PV.id });
+ok(r.error, 'sem login: não lê os bloqueios da organização');
+// certificado
+for (const [nome, cpf, ip] of [['Maria Clara Souza', '52998224725', '10.8.0.3'], ['Maria Clara Lima', '11144477735', '10.8.0.4']]) {
+  r = await chegar(nome, cpf, ip, -3.1001);
+  ok(r.data.ok, 'check-in pelo celular: ' + nome);
+}
+const cert = (chave, id) => pub('obter_certificado', { p_slug: PV.slug, p_chave: chave || '', p_id: id || null }, '10.8.0.9');
+r = await cert('maria clara');
+ok(r.data.multiplos && r.data.opcoes.length === 2 && r.data.opcoes.every((o) => o.pede_cpf === true && !('cpf' in o) && !('id' in o)) && !JSON.stringify(r.data).includes('52998224725'),
+  'busca por pedaço do nome: lista nomes SEM CPF e sem id');
+r = await cert('mar');
+ok(r.data.erro === 'nao_encontrado', 'pedaço de nome com menos de 4 letras: não lista ninguém');
+r = await cert('Maria Clara Souza');
+ok(r.data.precisa_cpf === true && !r.data.codigo && !r.data.liberado && (await q(`select count(*) n from checkin.certificados where evento_id='${PV.id}'`))[0].n == 0,
+  'nome exato de quem tem CPF: pede o CPF antes de emitir (nada emitido)');
+r = await cert('111.444.777-35');
+ok(r.data.ok && r.data.liberado && r.data.nome === 'Maria Clara Lima' && /^CERT-/.test(r.data.codigo) && !('cpf' in r.data) && r.data.cpf_parcial === '111.***.***-**', 'com o CPF completo: emite o certificado (sem o CPF inteiro na resposta)');
+const COD_CERT = r.data.codigo, ID_MARIA = r.data.id;
+ok((await cert(COD_CERT)).data.nome === 'Maria Clara Lima' && (await cert('', ID_MARIA)).data.liberado, 'pelo código CERT ou pelo id (link do próprio celular): emite');
+for (let i = 1; i <= 7; i++) await pub('cadastrar_avulso', { p_slug: PV.slug, p_codigo: pv.codigo, p_nome: `Joana Teste ${i}`, p_empresa: '', p_dispositivo: 'T', p_dados: { consentiu: true } }, '10.8.0.10');
+r = await cert('joana teste');
+ok(r.data.erro === 'muitos', 'mais de 6 pessoas com o mesmo pedaço de nome: pede o nome completo');
+r = await cert('Joana Teste 3');
+ok(r.data.ok && r.data.liberado && r.data.nome === 'Joana Teste 3', 'quem não informou CPF (cadastro sem CPF): emite pelo nome exato');
+await adm('excluir_evento', { p_id: PV.id });

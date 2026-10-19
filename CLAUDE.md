@@ -17,7 +17,7 @@ Um sistema onde a organização cria **eventos**. Cada evento tem:
 - **Funções do Prêmio IEL:** recepção com busca sem acento, confirmar com 1 toque e desfazer, cancelar entrada com 2 toques, cadastro na hora, mesma pessoa em várias listas = um check-in, sincronização entre tablets, painel ao vivo, relatório Excel, encerrar (só consulta).
 
 ## Decisões (15/10/2026)
-- Público: eventos do IEL **e** produto da HbOne → sem marca fixa; a área da organização usa a identidade HbOne.
+- Público: eventos do IEL **e** produto da HbOne → sem marca fixa nos tablets. A área da organização usava a identidade HbOne; **em 18/10/2026 passou para a identidade IEL** (logo IEL, cores oficiais, tema claro/escuro sincronizado com o portal). Para vender como produto HbOne, vai precisar de uma cópia sem IEL (como foi feito com a Gestão de Processos).
 - Acesso da organização integrado ao Portal Geral (18/10/2026): quem cria/configura eventos são os usuários com `admin_geral` (Hudson) ou com a permissão `checkin` marcada no painel de usuários do Portal Geral (`portal.usuarios` sincronizado com `checkin.admins`). Login com SSO transparente via portal e tela de login própria em `checkin.hbone.com.br`.
 - Tablets e painel: **link + código** (sem login). Código errado 30 vezes em 10 min bloqueia aquele endereço por 10 min; trocar o código libera.
 - Servidor HB + Supabase **hb-sistemas** (schema `checkin`), endereço `checkin.hbone.com.br`.
@@ -50,14 +50,14 @@ Site estático (Caddy) + Supabase. **Nada é lido ou gravado direto nas tabelas*
 | `ferramentas/nova-versao.mjs` | Atualiza `?v=` dos .js/.css nas páginas. **Rodar antes de cada publicação** |
 | `testes/` | Testes (ver abaixo) |
 
-### Caddy (quando publicar)
+### Caddy (no ar desde 18/10/2026)
 O link `/e/<evento>` precisa abrir `evento.html` e o do convidado `/q/<evento>/<chave>` abre `convidado.html`: no bloco do Caddy, `rewrite /e/* /evento.html` e `rewrite /q/* /convidado.html`. HTML sem cache longo (como nos outros sistemas).
 
 ## Testes
 Rodar **fora do OneDrive**: copiar `testes/*.mjs` + `package.json` para uma pasta temporária, `npm install`, e:
-- `node testar-sql.mjs` — banco e regras de acesso (120 verificações);
+- `node testar-sql.mjs` — banco e regras de acesso (144 verificações);
 - `node testar-lista.mjs` — leitura de planilhas e ligação de pessoas (20 verificações);
-- `node servidor-teste.mjs` (deixar aberto; reiniciar = banco limpo) e depois `node testar-telas.mjs` — telas no Edge (44 verificações, prints em `testes/telas/`); `node testar-listas.mjs` — abas Convidados e Listas VIP (35 verificações, gera planilhas de teste bagunçadas); `node testar-recepcao.mjs` — recepção com 2 tablets (aparelhos separados) e totem (51 verificações); `node testar-painel.mjs` — painel e relatório, abrindo o Excel gerado (31 verificações); `node testar-encerramento.mjs` — horário de encerramento, inclusive tablet com relógio errado (27 verificações); `node testar-aberto.mjs` — evento aberto com CPF, LGPD e relatório (37 verificações); `node testar-qr.mjs` — check-in pelo celular, tela cheia, cartazes (PDF em testes/telas) e localização (40 verificações).
+- `node servidor-teste.mjs` (deixar aberto; reiniciar = banco limpo) e depois `node testar-telas.mjs` — telas no Edge (44 verificações, prints em `testes/telas/`); `node testar-listas.mjs` — abas Convidados e Listas VIP (35 verificações, gera planilhas de teste bagunçadas); `node testar-recepcao.mjs` — recepção com 2 tablets (aparelhos separados) e totem (51 verificações); `node testar-painel.mjs` — painel e relatório, abrindo o Excel gerado (31 verificações); `node testar-encerramento.mjs` — horário de encerramento, inclusive tablet com relógio errado (27 verificações); `node testar-aberto.mjs` — evento aberto com CPF, LGPD e relatório (37 verificações); `node testar-qr.mjs` — check-in pelo celular, tela cheia, cartazes (PDF em testes/telas) e localização (40 verificações); `node testar-privacidade.mjs` — painel de bloqueios e busca de certificado sem vazar CPF (16 verificações).
 - Atalho: `bash rodar-telas.sh testar-telas.mjs testar-listas.mjs` sobe o servidor limpo para cada bateria.
 **Para o Hudson testar sozinho:** dois cliques em `testar-no-computador.bat` (pasta do projeto). Ele copia os testes para %LOCALAPPDATA%checkin-eventos-teste, instala na primeira vez, abre a janela "Check-in de Eventos - servidor" e o navegador. Fechar a janela desliga e apaga os dados de teste. Se a porta 3999 estiver ocupada, avisa e para (não abre o navegador em outro sistema).
 O servidor de teste serve o site em http://localhost:3999 (login `hudson` / `Senha-Hudson-123`) e imita o Supabase em http://localhost:3998.
@@ -95,7 +95,29 @@ O servidor de teste serve o site em http://localhost:3999 (login `hudson` / `Sen
   - Celular: formulário (`js/formulario.js`, o mesmo módulo do tablet), aviso de LGPD (+ frase da localização), comprovante com marca animada e relógio correndo, guardado no aparelho (reabre o comprovante). Recusas explicadas: QR vencido, ainda não abriu, encerrado, longe/sem localização ("faça o check-in na recepção"), muitas tentativas, tempo esgotado.
   - Tela cheia: link do evento com `#qr` (sem cabeçalho, sem pedir nome do aparelho); com "muda a cada minuto", barra de tempo.
   - Organização, aba Acesso → "QR para os convidados": abertura, "QR muda a cada minuto" (desativa cartazes), "Conferir localização" (coordenadas coladas ou "usar minha localização atual", "ver no mapa", raio 100 m–2 km), cartaz A4, meia folha (2 por A4), tela cheia, copiar link, trocar QR. Relatório: "Pelo celular (QR)". Relatório: sem "Confirmaram"/Ausentes; o da organização tem as colunas do cadastro + "Aceite LGPD". Faixa "O check-in encerra às 21:00 (em 10 min)" nos últimos 15 min; no horário, recepção e totem viram a tela "Check-in encerrado" com botão "Ver painel"; painel travado (sem Desfazer). O botão manual mostra a mesma tela.
-- Etapa 5 — Teste completo e publicação (SQL no hb-sistemas + expor schema `checkin` na API, linha A `checkin` no registro.br, repositório privado + deploy key, bloco no Caddy, link no Portal Geral).
+- **Certificado de participação — FEITO entre 16 e 18/10/2026 (em outra conversa; já estava no primeiro envio ao GitHub).** Sem testes automáticos.
+  - Organização: aba **Certificados** — liga/desliga, texto com `{nome}`, `{evento}`, `{data}`, `{horas}`, carga horária, emissor, assinatura (nome, cargo e imagem) e horário de liberação (vazio = libera assim que a presença é confirmada).
+  - Banco: colunas `eventos.certificado_*`; tabela `checkin.certificados` (código `CERT-XXXX-XXXXXXXX`, nome, empresa, CPF, horas). `obter_certificado(slug, chave, id)` (público) busca por id, código CERT, CPF, nome exato ou nome parcial; `validar_certificado(codigo)` (público) confere a autenticidade; `obter_presentes_certificado(evento)` (organização).
+  - Celular: no comprovante aparecem "Certificado de participação", "Salvar/Enviar link no meu WhatsApp" e, depois de liberado, "Baixar meu Certificado (PDF)". Link do evento ganhou as telas `#certificado` (baixar pelo nome/CPF/código) e `#validar`. Layout do certificado com as cores e a logo do IEL.
+  - Envio automático por e-mail: só planejado (Amazon SES, ver Roadmap).
+- **Etapa 5 — PUBLICADO em 18/10/2026 (em outra conversa).** No ar em **https://checkin.hbone.com.br** (conferido em 19/10: responde 200). Repositório `github.com/hudsonbatistaia/checkin-eventos` (a pasta do projeto inteira é o repositório; o site é a subpasta `site/`). `site/js/config.js` já tem a chave publishable do hb-sistemas.
+  - `supabase/02-usuarios.sql` foi reescrito: libera o Hudson, cadastra o Check-in no catálogo do Portal (`portal.sistemas`, código `checkin`) e liga o painel de usuários do Portal a `checkin.admins` (`portal.sincronizar_perfis` / `portal.aplicar_acessos`). Quem tem "Check-in de Eventos" marcado no Portal (ou é admin geral) entra na organização.
+  - Login (`js/acesso.js`): tela própria + entrada transparente vinda do Portal (`#access_token=` no endereço ou cookie `sb_auth_token` de `.hbone.com.br`); "Sair" volta ao portal.
+- **Ajustes de 18/10/2026 (outra conversa, 10 envios entre 12:29 e 16:00):**
+  - Identidade IEL na organização (logo, faixa de destaque, vitrine de recursos, rodapé), tema claro/escuro sincronizado com o portal.
+  - Cards dos eventos mostram a logo ou a arte do evento; degradê nas cores IEL; emissor padrão do certificado.
+  - **Registro de bloqueios por localização** (`supabase/03-bloqueios-geo.sql`, também incorporado ao `01-banco.sql`): tabela `checkin.bloqueios_geo` (nome, empresa, CPF, telefone, e-mail, motivo, distância, latitude/longitude, IP); `convidado_checkin` grava cada recusa por localização; listagem na organização (`obter_bloqueios_geo`) e no painel (`bloqueios_geo_painel`). Relatório ganhou esses dados.
+  - Prévia ao compartilhar o link (imagem `site/img/preview-compartilhamento.jpg`, título e descrição).
+  - Correção: a tela não pula mais para o topo ao salvar o QR dos convidados.
+- **Os testes automáticos não foram atualizados depois de 16/10** (pasta `testes/`): certificado, bloqueios por localização, integração com o portal e as mudanças visuais não têm teste. Antes de mexer de novo, rodar todas as baterias para ver o que mudou.
+
+## Correções de privacidade (19/10/2026)
+Achadas ao atualizar esta documentação (contrariavam as decisões de 16/10: dados sensíveis só no relatório da organização; localização não guardada) e **corrigidas no mesmo dia** com o "pode" do Hudson. Arquivo para o Supabase: `supabase/04-privacidade.sql` (só as funções corrigidas + limpeza; pode rodar de novo). O `01-banco.sql` e o `03-bloqueios-geo.sql` já estão corrigidos.
+1. **Painel dos tablets** (`bloqueios_geo_painel`, com o código do evento) recebia CPF, telefone, e-mail e latitude/longitude de quem foi barrado pela localização. Agora recebe só nome, empresa, motivo, distância, raio e horário. CPF e contatos continuam só na organização (`obter_bloqueios_geo`, com login) e no relatório dela.
+2. **Localização da pessoa barrada era guardada** (`bloqueios_geo.lat/lng/precisao`) apesar do texto "não é guardada". `convidado_checkin` não grava mais; o `04` apaga as já guardadas. Ficam motivo e distância. Organização e relatório sem coluna/link de mapa.
+3. **Busca pública do certificado** (`obter_certificado`, só com o link do evento) devolvia CPF completo de várias pessoas na busca por pedaço de nome. Agora: nunca devolve CPF nem id na lista de opções (só nome, empresa e `pede_cpf`); pedaço de nome exige 4 letras ou mais e no máximo 6 resultados (`erro: muitos`); achando só pelo nome alguém que tem CPF, devolve `precisa_cpf` e só emite com o CPF completo (conferido no banco — antes a conferência dos "3 primeiros dígitos" era só na tela); "estava na lista mas não veio" só com o nome exato. Quem fez cadastro sem CPF (listas, cadastro sem CPF) segue emitindo pelo nome exato. Id (link do próprio celular), código CERT e CPF continuam emitindo direto.
+4. `03-bloqueios-geo.sql` liberava `obter_bloqueios_geo` para `anon`; alinhado com o `01` (só `authenticated`).
+Testes: 14 novos no `testar-sql.mjs` (2 antigos ajustados: "Ana" → "Ana Sou"; "Bruno" → "Bruno Lima") e `testar-privacidade.mjs` (16, no navegador: painel sem CPF/mapa, respostas do servidor sem CPF, busca por nome pedindo CPF completo).
 
 ## Sugestões de mercado para o futuro (Roadmap)
 1. **Impressão instantânea de crachás / etiquetas:** ao confirmar no tablet, imprimir etiqueta em impressora térmica sem fio.

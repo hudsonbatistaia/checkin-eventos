@@ -546,8 +546,7 @@
         const hora = b.em ? new Date(b.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
         const distStr = b.distancia_metros != null ? (b.distancia_metros >= 1000 ? `${(b.distancia_metros / 1000).toFixed(1)} km` : `${Math.round(b.distancia_metros)} m`) : "—";
         const mot = b.motivo === "longe" ? `Fora do local (${distStr})` : (b.motivo === "sem_local" ? "Sem GPS / Negou" : "Sinal impreciso");
-        const contatos = [b.empresa, b.cpf ? `CPF: ${b.cpf}` : null, b.telefone].filter(Boolean).join(" · ");
-        const link = b.lat != null && b.lng != null ? `<a href="https://www.google.com/maps?q=${b.lat},${b.lng}" target="_blank" rel="noopener" style="font-size:12px;color:var(--destaque);text-decoration:underline;">Ver mapa</a>` : "";
+        const contatos = b.empresa || "";   // CPF e contatos ficam só na organização (com login)
 
         return `<li class="row">
           <div>
@@ -556,7 +555,6 @@
           </div>
           <div style="text-align:right;">
             <div class="t tabnum" style="color:#DC2626;">${hora}</div>
-            <div>${link}</div>
           </div>
         </li>`;
       }).join("");
@@ -893,6 +891,11 @@
         $("certErro").hidden = false;
         return;
       }
+      if (r.erro === "muitos") {
+        $("certErro").textContent = "Muitas pessoas com esse nome. Digite o nome completo ou o CPF.";
+        $("certErro").hidden = false;
+        return;
+      }
       if (r.erro === "desativado") {
         $("certErro").textContent = "A emissão de certificados não está ativada para este evento.";
         $("certErro").hidden = false;
@@ -904,14 +907,15 @@
         const lista = $("certListaMultiplos");
         if (lista && boxMult) {
           lista.innerHTML = r.opcoes.map((op) => `
-            <button class="btn" type="button" style="text-align:left; justify-content:space-between; padding:12px 16px; border-radius:12px; background:var(--superficie-2); color:var(--tinta); display:flex; align-items:center; width:100%; border:1px solid var(--linha);" data-id="${op.id}">
+            <button class="btn" type="button" style="text-align:left; justify-content:space-between; padding:12px 16px; border-radius:12px; background:var(--superficie-2); color:var(--tinta); display:flex; align-items:center; width:100%; border:1px solid var(--linha);" data-nome="${C.esc(op.nome)}" data-pede-cpf="${op.pede_cpf ? "1" : ""}">
               <span><b>${C.esc(C.nomePadrao(op.nome))}</b>${op.empresa ? `<br><small class="suave">${C.esc(op.empresa)}</small>` : ""}</span>
               <span style="font-weight:700; color:var(--destaque);">Emitir ›</span>
             </button>
           `).join("");
           lista.querySelectorAll("button").forEach((b) => {
             b.addEventListener("click", () => {
-              buscarCertificado({ p_id: b.dataset.id });
+              if (b.dataset.pedeCpf) pedirCpfCertificado(b.dataset.nome);
+              else buscarCertificado({ p_chave: b.dataset.nome });
             });
           });
           boxMult.hidden = false;
@@ -919,16 +923,8 @@
         return;
       }
 
-      // Barreira de segurança antifraude: confirma 3 dígitos do CPF se buscou por nome
-      if (r.precisa_confirmar_cpf && r.digitos_esperados && boxSeg) {
-        certPendente = r;
-        boxSeg.hidden = false;
-        $("certSegurancaMsg").innerHTML = `Para garantir a privacidade de <b>${C.esc(C.nomePadrao(r.nome))}</b>, confirme os <b>3 primeiros dígitos</b> do CPF cadastrado (${r.cpf_parcial || "***.***.***-**"}):`;
-        $("campoConfirmaDigitos").value = "";
-        $("certSegurancaErro").hidden = true;
-        $("campoConfirmaDigitos").focus();
-        return;
-      }
+      // Achou só pelo nome e a pessoa tem CPF: o banco só emite com o CPF completo.
+      if (r.precisa_cpf) { pedirCpfCertificado(r.nome); return; }
 
       mostrarResultadoCertificado(r);
     } catch (e) {
@@ -939,20 +935,29 @@
     }
   }
 
-  // Confirmação de segurança dos 3 dígitos
+  // Confirmação pelo CPF completo (conferido no banco, não na tela)
+  function pedirCpfCertificado(nome) {
+    const box = $("certSeguranca");
+    if (!box) return;
+    if ($("certMultiplos")) $("certMultiplos").hidden = true;
+    box.hidden = false;
+    $("certSegurancaMsg").innerHTML = `Para proteger os dados de <b>${C.esc(C.nomePadrao(nome))}</b>, informe o <b>CPF completo</b> usado no check-in:`;
+    $("campoConfirmaDigitos").value = "";
+    $("certSegurancaErro").hidden = true;
+    $("campoConfirmaDigitos").focus();
+  }
+  if ($("campoConfirmaDigitos")) $("campoConfirmaDigitos").addEventListener("input", (e) => { e.target.value = C.mascaraCpf(e.target.value); });
   if ($("btnConfirmarSeguranca")) {
     $("btnConfirmarSeguranca").addEventListener("click", () => {
-      if (!certPendente) return;
-      const dig = $("campoConfirmaDigitos").value.replace(/\D/g, "");
-      if (dig !== certPendente.digitos_esperados) {
-        $("certSegurancaErro").textContent = "Os 3 dígitos informados não conferem com o CPF deste participante.";
+      const cpf = $("campoConfirmaDigitos").value.replace(/\D/g, "");
+      if (!C.cpfValido(cpf)) {
+        $("certSegurancaErro").textContent = "CPF inválido. Confira os números.";
         $("certSegurancaErro").hidden = false;
         $("campoConfirmaDigitos").focus();
         return;
       }
       $("certSeguranca").hidden = true;
-      mostrarResultadoCertificado(certPendente);
-      certPendente = null;
+      buscarCertificado({ p_chave: cpf });
     });
   }
 
