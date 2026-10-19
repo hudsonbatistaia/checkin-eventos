@@ -272,6 +272,8 @@ body.convidado .conv-form .btn.primary {
 /* ---------- Tela cheia do QR dos convidados (#qr) ---------- */
 body[data-view="qr"] #topo, body[data-view="qr"] .banner, body[data-view="qr"] #telaEncerrado { display: none !important; }
 .tela-qr { flex: 1; display: grid; justify-items: center; align-content: center; gap: 10px; text-align: center; padding: 20px 0; }
+.qr-logo-iel { background: #FFF; border-radius: 14px; padding: 8px 16px; line-height: 0; box-shadow: var(--sombra); }
+.qr-logo-iel img { height: clamp(28px, 5vh, 48px); width: auto; }
 .qr-arte { max-width: min(560px, 90%); max-height: 15vh; object-fit: contain; border-radius: 14px; }
 .tela-qr h1 { margin: 0; font-family: var(--display); font-size: clamp(26px, min(4.5vw, 6vh), 52px); line-height: 1.1; }
 .qr-caixa { background: #FFF; padding: clamp(12px, 2vw, 22px); border-radius: 24px; box-shadow: var(--sombra); }

@@ -238,9 +238,30 @@
     `;
   }
 
+  /* QR com a logo do IEL no centro (cartazes, cartão de acesso e tela cheia).
+     Correção de erro alta ("H", até 30%): a logo cobre menos de 10% e o QR continua lendo. */
+  const LOGO_IEL = "/img/logo-iel.png";
+  function qrComLogo(texto) {
+    const qr = root.qrcode(0, "H");
+    qr.addData(texto); qr.make();
+    const cel = 4, lado = qr.getModuleCount() * cel;
+    const lw = lado * 0.3, lh = lw * 538 / 933, folga = cel * 1.5;      // logo 933 x 538
+    const bw = lw + folga * 2, bh = lh + folga * 2, bx = (lado - bw) / 2, by = (lado - bh) / 2;
+    const n = (v) => v.toFixed(1);
+    return qr.createSvgTag({ cellSize: cel, margin: 0, scalable: true }).replace("</svg>",
+      `<rect x="${n(bx)}" y="${n(by)}" width="${n(bw)}" height="${n(bh)}" rx="${cel * 1.5}" fill="#FFFFFF"/>` +
+      `<image href="${LOGO_IEL}" x="${n(bx + folga)}" y="${n(by + folga)}" width="${n(lw)}" height="${n(lh)}" preserveAspectRatio="xMidYMid meet"/></svg>`);
+  }
+  // Espera a logo carregar antes de imprimir (senão a folha pode sair sem ela).
+  let logoPromessa = null;
+  function logoCarregada() {
+    if (!logoPromessa) logoPromessa = new Promise((ok) => { const i = new Image(); i.onload = i.onerror = () => ok(); i.src = LOGO_IEL; });
+    return logoPromessa;
+  }
+
   root.Comum = { esc, norm, slug, nomePadrao, bonita, dataExtenso, dataCurta, hhmm, quandoCurto, hexRgb, rgbHex, luminancia, contraste, misturar,
     ajustarContraste, sobre, TEMA_PADRAO, variaveisTema, aplicarTema,
     CAMPOS_FIXOS, ROTULOS, rotuloCampo, precisaConsentimento, textoLgpdPadrao, digitos, cpfValido, mascaraCpf, mascaraTelefone, mascaraData, dataParaIso, emailValido,
-    gerarHtmlCertificado };
+    gerarHtmlCertificado, LOGO_IEL, qrComLogo, logoCarregada };
 })(typeof self !== "undefined" ? self : this);
 

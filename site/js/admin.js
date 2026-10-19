@@ -563,11 +563,7 @@
   }));
 
   /* ---------- Acesso ---------- */
-  function qrSvg(texto) {
-    const qr = window.qrcode(0, "M");
-    qr.addData(texto); qr.make();
-    return qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
-  }
+  const qrSvg = (texto) => C.qrComLogo(texto);   // com a logo do IEL no centro
   function preencherAcesso() {
     $("aLink").textContent = linkEvento(evento);
     $("aCodigo").textContent = evento.codigo;
@@ -666,6 +662,7 @@
     const arte = imagens.arte && imagens.arte.url;
     const info = [C.dataExtenso(evento.data), evento.horario, evento.local].filter(Boolean).join(" · ");
     const um = `<div class="cartaz ${formato}">
+      <img class="logo-iel" src="${C.LOGO_IEL}" alt="IEL">
       ${arte ? `<img class="arte" src="${arte}" alt="">` : ""}
       <h1>${esc(evento.nome)}</h1>${info ? `<p class="info">${esc(info)}</p>` : ""}
       <p class="chamada">Faça seu check-in pelo celular</p>
@@ -673,6 +670,7 @@
       <ol><li>1. Aponte a câmera do celular</li><li>2. Preencha seus dados</li><li>3. Mostre o comprovante na entrada</li></ol>
       <p class="link">${esc(linkConvidado())}</p></div>`;
     $("impressao").innerHTML = formato === "a5" ? um + um : um;
+    await C.logoCarregada();
     setTimeout(() => window.print(), 300);
   }
   $("qcA4").addEventListener("click", () => imprimirCartaz("a4"));
@@ -755,11 +753,12 @@
     preencherAcesso(); preencherCabecalho();
     toast("Código trocado: " + novo);
   });
-  $("btnImprimir").addEventListener("click", () => {
-    $("impressao").innerHTML = `<h1>${esc(evento.nome)}</h1><p>Acesso da equipe · aponte a câmera do tablet</p>
+  $("btnImprimir").addEventListener("click", async () => {
+    $("impressao").innerHTML = `<img class="logo-iel" src="${C.LOGO_IEL}" alt="IEL"><h1>${esc(evento.nome)}</h1><p>Acesso da equipe · aponte a câmera do tablet</p>
       <div class="qr-imp">${qrSvg(linkEvento(evento, "", true))}</div>
       <p>${esc(linkEvento(evento))}</p><p>Código</p><div class="cod">${esc(evento.codigo)}</div>`;
-    window.print();
+    await C.logoCarregada();
+    setTimeout(() => window.print(), 300);
   });
 
   /* ---------- Operação ---------- */

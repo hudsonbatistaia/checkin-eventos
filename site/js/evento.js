@@ -593,8 +593,7 @@
       const url = `${location.origin}/q/${SLUG}/${data.k}`;
       if (data.k !== qrK) {
         qrK = data.k;
-        const qr = window.qrcode(0, "M"); qr.addData(url); qr.make();
-        $("qrImagem").innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+        $("qrImagem").innerHTML = C.qrComLogo(url);   // com a logo do IEL no centro
       }
       $("qrLink").textContent = data.rotativo ? "O código muda a cada minuto." : url.replace(/^https?:\/\//, "");
       if (data.encerrado) avisoQr("Check-in encerrado");
