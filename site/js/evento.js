@@ -36,7 +36,17 @@
     $("telaAviso").hidden = true; $("telaCodigo").hidden = false;
     mostrarApp(false);
     $("codigoNome").textContent = evento ? evento.nome : "";
-    $("codigoInfo").textContent = evento ? [evento.subtitulo, C.dataExtenso(evento.data), evento.local].filter(Boolean).join(" · ") : "";
+    // Subtítulo numa linha própria; data/horário e local num quadro, cada um com seu ícone.
+    const sub = (evento && evento.subtitulo) || "";
+    $("codigoSub").textContent = sub; $("codigoSub").hidden = !sub;
+    const ICO_DATA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>';
+    const ICO_LOCAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
+    const itens = [];
+    const quando = evento ? [C.dataExtenso(evento.data), evento.horario].filter(Boolean).join(" · ") : "";
+    if (quando) itens.push([ICO_DATA, "Data", quando]);
+    if (evento && evento.local) itens.push([ICO_LOCAL, "Local", evento.local]);
+    $("codigoMeta").innerHTML = itens.map(([ico, rot, t]) => `<li>${ico}<span><span class="sr-only">${rot}: </span>${esc(t)}</span></li>`).join("");
+    $("codigoMeta").hidden = !itens.length;
     $("codigoErro").textContent = msg || "";
     $("campoCodigo").value = "";
     $("campoCodigo").focus();

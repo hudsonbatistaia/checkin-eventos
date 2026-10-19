@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/css/evento.css?v=202610191449">
+<link rel="stylesheet" href="/css/evento.css?v=202610191506">
 </head>
 <body data-view="carregando">
 
@@ -46,11 +46,16 @@
 <div class="entrada" id="telaCodigo" hidden>
   <form class="entrada-cartao" id="formCodigo" autocomplete="off" novalidate>
     <img class="arte-mini" id="codigoArte" alt="" hidden>
-    <h1 id="codigoNome"></h1>
-    <p id="codigoInfo"></p>
-    <label for="campoCodigo"><b>Código do evento</b></label>
-    <input class="codigo-campo" id="campoCodigo" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" aria-describedby="codigoErro">
-    <p class="erro" id="codigoErro" role="alert"></p>
+    <div class="ent-cabeca">
+      <h1 id="codigoNome"></h1>
+      <p class="ent-sub" id="codigoSub" hidden></p>
+    </div>
+    <ul class="ent-meta" id="codigoMeta" hidden></ul>
+    <div class="ent-codigo">
+      <label for="campoCodigo">Código do evento</label>
+      <input class="codigo-campo" id="campoCodigo" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="one-time-code" aria-describedby="codigoErro">
+      <p class="erro" id="codigoErro" role="alert"></p>
+    </div>
     <button class="btn primary" type="submit" id="btnCodigo">Entrar</button>
     <p class="dica-codigo">O código fica com a organização do evento.</p>
   </form>
@@ -290,11 +295,11 @@
 
 <script src="/vendor/supabase.min.js"></script>
 <script src="/vendor/qrcode.js"></script>
-<script src="/js/config.js?v=202610191449"></script>
-<script src="/js/comum.js?v=202610191449"></script>
-<script src="/js/formulario.js?v=202610191449"></script>
-<script src="/js/presenca.js?v=202610191449"></script>
-<script src="/js/relatorio.js?v=202610191449"></script>
-<script src="/js/evento.js?v=202610191449"></script>
+<script src="/js/config.js?v=202610191506"></script>
+<script src="/js/comum.js?v=202610191506"></script>
+<script src="/js/formulario.js?v=202610191506"></script>
+<script src="/js/presenca.js?v=202610191506"></script>
+<script src="/js/relatorio.js?v=202610191506"></script>
+<script src="/js/evento.js?v=202610191506"></script>
 </body>
 </html>
