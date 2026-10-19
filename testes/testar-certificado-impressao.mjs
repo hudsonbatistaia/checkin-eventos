@@ -41,5 +41,11 @@ const pdf2 = await a.pdf({ preferCSSPageSize: true, printBackground: true });
 const mb = (Buffer.from(pdf2).toString('latin1').match(/MediaBox\s*\[\s*0 0 ([\d.]+) ([\d.]+)/) || []).slice(1).map(Number); const deitada = mb[0] > mb[1];
 ok(deitada, `lote em A4 deitado (${mb.join(' x ')})`);
 ok(paginas(pdf2) === 3, `lote com 3 presentes: ${paginas(pdf2)} página(s)`);
+// com a página aberta, chega mais uma pessoa: ao voltar para a aba, o total acompanha
+await sql(`select checkin.cadastrar_avulso('${E.slug}', '${E.codigo}', 'Davi Nunes', '', 'Tablet 2', ${j({ consentiu: true })})`);
+await a.emulateMediaType(null);
+await a.evaluate((id) => { location.hash = "#/evento/" + id + "/dados"; }, ev.id); await espera(600);
+await a.evaluate((id) => { location.hash = "#/evento/" + id + "/certificados"; }, ev.id); await espera(1200);
+ok(/: 4 pessoa/.test(await a.$eval("#certLoteInfo", (e) => e.textContent)), "total atualiza sem recarregar a página (4 presentes)");
 ok(erros.length === 0, 'sem erros ' + erros.join('|'));
 await b.close();

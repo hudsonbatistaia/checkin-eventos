@@ -922,12 +922,20 @@
     }
   }
 
-  function atualizarLoteCertificados() {
+  // Conta no servidor, na hora (a mesma consulta da impressão): os check-ins feitos
+  // depois que a página foi aberta também entram.
+  async function atualizarLoteCertificados() {
     if (!evento) return;
-    const m = window.Presenca.montar(evento.listas, evento.pessoas, evento.checkins, evento.avulsos);
-    const totalPresentes = m.presenca.size + m.avulsos.length;   // grupos com check-in + cadastros na hora
-    $("certLoteInfo").textContent = `Total de participantes com presença confirmada até o momento: ${totalPresentes} pessoa(s).`;
-    $("btnBaixarTodosCert").disabled = totalPresentes === 0;
+    const id = evento.id;
+    $("certLoteInfo").textContent = "Contando as presenças confirmadas…";
+    let total;
+    try { total = ((await rpc("obter_presentes_certificado", { p_evento_id: id })) || []).length; }
+    catch { total = null; }
+    if (!evento || evento.id !== id) return;
+    $("certLoteInfo").textContent = total == null
+      ? "Não foi possível contar as presenças agora. Você pode tentar imprimir mesmo assim."
+      : `Total de participantes com presença confirmada até o momento: ${total} pessoa(s).`;
+    $("btnBaixarTodosCert").disabled = total === 0;
   }
 
   $("certAtivo").addEventListener("change", (e) => {
