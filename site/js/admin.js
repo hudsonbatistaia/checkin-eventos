@@ -925,7 +925,7 @@
   function atualizarLoteCertificados() {
     if (!evento) return;
     const m = window.Presenca.montar(evento.listas, evento.pessoas, evento.checkins, evento.avulsos);
-    const totalPresentes = m.presentes || 0;
+    const totalPresentes = m.presenca.size + m.avulsos.length;   // grupos com check-in + cadastros na hora
     $("certLoteInfo").textContent = `Total de participantes com presença confirmada até o momento: ${totalPresentes} pessoa(s).`;
     $("btnBaixarTodosCert").disabled = totalPresentes === 0;
   }
@@ -1093,8 +1093,12 @@
         const carga = (evento.certificado_horas != null && evento.certificado_horas !== "") ? `${evento.certificado_horas}h` : `${$("certHoras").value || 0}h`;
         const nomeArquivo = `Certificados - ${evNome} - ${carga}`.replace(/[\\/:*?"<>|]/g, " ");
         document.title = nomeArquivo;
+        // certificados em A4 deitado, sem margem (os cartazes do QR seguem em pé)
+        const estilo = document.createElement("style");
+        estilo.textContent = "@page { size: A4 landscape; margin: 0; }";
+        document.head.appendChild(estilo);
         window.print();
-        setTimeout(() => { document.title = tituloAntes; }, 2000);
+        setTimeout(() => { document.title = tituloAntes; estilo.remove(); }, 2000);
         btn.disabled = false;
         btn.textContent = txt;
       }, 500);

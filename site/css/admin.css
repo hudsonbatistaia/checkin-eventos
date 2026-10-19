@@ -963,11 +963,14 @@ button, input, select { font: inherit; }
 
   /* Certificados em lote */
   .impressao-certificados, .impressao-certificados * { visibility: visible !important; }
-  .impressao-certificados { position: absolute; left: 0; top: 0; width: 100%; background: #FFF !important; text-align: initial; }
+  .impressao-certificados { position: static; width: 297mm; background: #FFF !important; text-align: initial; }
+  /* 1 mm de folga e quebra só ENTRE certificados (sem página em branco no fim). */
   .impressao-certificados .cert-pagina {
-    width: 297mm; height: 210mm; page-break-after: always; break-after: page;
+    width: 297mm; height: 209mm; max-width: none; aspect-ratio: auto; overflow: hidden;
+    break-inside: avoid; page-break-inside: avoid;
     box-shadow: none; margin: 0; padding: 10mm; box-sizing: border-box;
   }
+  .impressao-certificados .cert-pagina + .cert-pagina { break-before: page; page-break-before: always; }
 }
 
 /* ---------- Auditoria de Bloqueios por Localização ---------- */

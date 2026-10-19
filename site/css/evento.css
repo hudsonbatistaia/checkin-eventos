@@ -678,9 +678,14 @@ body.consulta .find .search { flex-basis: 100%; }
 
 @media print {
   @page { size: A4 landscape; margin: 0; }
-  body * { visibility: hidden !important; }
-  .impressao-certificados, .impressao-certificados * { visibility: visible !important; }
-  .impressao-certificados { position: absolute; left: 0; top: 0; width: 100%; background: #FFF !important; }
-  .impressao-certificados .cert-pagina { width: 297mm; height: 210mm; page-break-after: always; break-after: page; box-shadow: none; margin: 0; padding: 10mm; }
+  /* Só o certificado vai para o papel: o resto da página some (não só fica invisível),
+     senão a altura dela vira páginas em branco. */
+  html, body { margin: 0 !important; padding: 0 !important; height: auto !important; min-height: 0 !important; background: #FFF !important; }
+  body > :not(.impressao-certificados) { display: none !important; }
+  .impressao-certificados { display: block !important; position: static; width: 297mm; background: #FFF !important; }
+  /* 1 mm de folga na altura (arredondamento da impressora) e quebra só ENTRE certificados,
+     nunca depois do último: assim um certificado = uma página. */
+  .impressao-certificados .cert-pagina { width: 297mm; height: 209mm; max-width: none; aspect-ratio: auto; overflow: hidden; break-inside: avoid; page-break-inside: avoid; box-shadow: none; margin: 0; padding: 10mm; }
+  .impressao-certificados .cert-pagina + .cert-pagina { break-before: page; page-break-before: always; }
 }
 
