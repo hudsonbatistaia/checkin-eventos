@@ -391,4 +391,10 @@ r = await cert('joana teste');
 ok(r.data.erro === 'muitos', 'mais de 6 pessoas com o mesmo pedaço de nome: pede o nome completo');
 r = await cert('Joana Teste 3');
 ok(r.data.ok && r.data.liberado && r.data.nome === 'Joana Teste 3', 'quem não informou CPF (cadastro sem CPF): emite pelo nome exato');
+// zerar presenças também limpa os bloqueios por localização e o contador por rede
+ok((await q(`select count(*) n from checkin.bloqueios_geo where evento_id='${PV.id}'`))[0].n > 0 && (await q(`select count(*) n from checkin.qr_registros where evento_id='${PV.id}'`))[0].n > 0, 'antes de zerar: há bloqueios e registros do celular');
+r = await adm('zerar_presencas', { p_id: PV.id });
+ok(!r.error && (await q(`select count(*) n from checkin.bloqueios_geo where evento_id='${PV.id}'`))[0].n == 0 && (await q(`select count(*) n from checkin.qr_registros where evento_id='${PV.id}'`))[0].n == 0, 'zerar presenças: bloqueios por localização e contador por rede apagados');
+r = await pub('bloqueios_geo_painel', { p_slug: PV.slug, p_codigo: pv.codigo }, '10.8.0.2');
+ok(Array.isArray(r.data) && r.data.length === 0, 'painel dos tablets: lista de bloqueios vazia depois de zerar');
 await adm('excluir_evento', { p_id: PV.id });

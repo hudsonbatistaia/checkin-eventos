@@ -829,7 +829,7 @@
     if (novo) { toast("Evento duplicado."); location.hash = `#/evento/${novo.id}/dados`; }
   });
   $("btnZerar").addEventListener("click", async () => {
-    const ok = await confirmarDigitando("Zerar presenças?", "Apaga todas as presenças e cadastros na hora deste evento, em todos os tablets. As listas continuam.", "ZERAR", "Zerar presenças");
+    const ok = await confirmarDigitando("Zerar presenças?", "Apaga todas as presenças, cadastros na hora e bloqueios por localização deste evento, em todos os tablets. As listas continuam.", "ZERAR", "Zerar presenças");
     if (!ok) return;
     try { await rpc("zerar_presencas", { p_id: evento.id }); toast("Presenças zeradas."); await carregarEvento(evento.id); mostrarAba("operacao"); }
     catch (e) { toast("Não foi possível zerar: " + e.message, true); }

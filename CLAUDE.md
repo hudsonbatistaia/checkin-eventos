@@ -126,6 +126,11 @@ Testes: 14 novos no `testar-sql.mjs` (2 antigos ajustados: "Ana" → "Ana Sou"; 
 - No ar: rodar `supabase/05-limite-rede.sql` no SQL Editor do hb-sistemas (só troca essa função).
 - Ideia para depois, se precisar: identificador por celular e limite por aparelho.
 
+## Zerar presenças limpa os bloqueios (19/10/2026)
+
+- O `03-bloqueios-geo.sql` não trazia `zerar_presencas`; no ar, zerar deixava os bloqueios por localização.
+- Agora `zerar_presencas` apaga também `bloqueios_geo` e `qr_registros` (contador por rede). No ar: rodar `supabase/06-zerar-bloqueios.sql`.
+
 ## Pendências
 - ~~Portal Geral: link com login vencido~~ **Corrigido em 19/10/2026 no Portal** (commit 620cd0b no portaliel): os links acompanham a renovação do login e o clique renova se estiver vencendo. O Check-in também mostra o motivo na tela se a entrada falhar (`js/acesso.js`, commit 2d64cff).
 - **Tornar o repositório `checkin-eventos` privado** (pedido do Hudson em 19/10/2026, "guarde para depois"). Hoje é público. Fazer como no Viabilidade: deploy key de leitura em /root/.ssh (deploy_checkin), Host github-checkin em /root/.ssh/config, trocar o remote de /var/www/checkin para SSH, e só então mudar para privado no GitHub.
